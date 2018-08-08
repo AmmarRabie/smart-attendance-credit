@@ -3,14 +3,33 @@ from functools import wraps
 import logging as Log
 import xml.etree.ElementTree as ET
 import requests
+from flask_sqlalchemy import SQLAlchemy
+from dicttoxml import dicttoxml
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mssql+pyodbc://AMMAR\SQLEXPRESS/test_from_api?driver=ODBC+Driver+11+for+SQL+Server'
+db = SQLAlchemy(app)
 
 
-@app.route('/tryFromApp')
-def tryFromApp():
-    output = ['ammar', 'abrar']
-    return jsonify({'response': output}), 200
+class Lecture(db.Model):
+    __tableName__ = 'Lecture'
+    id = db.Column(db.Integer, primary_key=True)
+    attendanceStatusOpen = db.Column(db.Boolean, nullable=False)
+    # def __repr__(self):
+    #     return '<Post %r>' % self.attendanceStatusOpen    
+    
+
+
+class StdAttendace(db.Model):
+    student_id = db.Column(db.Integer, primary_key=True)
+    lecture_id = db.Column(db.Integer, db.ForeignKey('lecture.id'), primary_key=True)
+    isAttend = db.Column(db.Boolean, nullable=False)
+    lecture = db.relationship('Lecture',
+        backref=db.backref('attendance', lazy=True))
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}        
+    # def __repr__(self):
+    #     return '<Post %r>' % self.isAttend
 
 
 @app.route('/courses-available')
@@ -52,6 +71,37 @@ def getAllCodes():
             uniqueCodes.append(codeElement.text)
             codesRote.append(codeElement)
     return ET.tostring(codesRote).decode()
+
+@app.route('/attendance/<lecture_id>')
+def getStudnetAttendance(lecture_id): 
+    return jsonify({'err': 'getStudnetAttendance not implemented yet'}), 404
+
+@app.route('/submit/<lecture_id>', methods=['post'])
+def submitAttendance(lecture_id):
+    return jsonify({'err': 'submitAttendance not implemented yet'}), 404
+
+@app.route('/codes')
+def getAttendanceStatus():
+    return jsonify({'err': 'not implemented yet'}), 404
+
+@app.route('/lecture.json/<lecture_id>')
+def getLectureInfo_Json(lecture_id, jsonify=True):
+    lecture = Lecture.query.filter_by(id=lecture_id).first()
+    attendance = lecture.attendance
+    attendanceList = []
+    for att in attendance:
+        attendanceList.append(att.as_dict())
+    json = {'Lecture': {'id': lecture.id, 'status': lecture.attendanceStatusOpen, 'att': attendanceList}}
+    return jsonify({'Lecture': json}) if jsonify else json
+
+@app.route('/lecture/<lecture_id>')
+@app.route('/lecture.xml/<lecture_id>')
+def getLectureInfo(lecture_id):
+    return dicttoxml(getLectureInfo_Json(lecture_id, jsonify=False), attr_type=False)
+
+@app.route('/lecture/new', methods=['post'])
+def insertLecture(lecture_id):
+    return jsonify({'err': 'submitAttendance not implemented yet'}), 404
 
 @app.route('/login')
 def login():
