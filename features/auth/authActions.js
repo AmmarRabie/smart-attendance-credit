@@ -1,4 +1,4 @@
-import {login} from '../../DataProviders'
+import login from '../../DataProviders'
 
 // types
 export const LOG_IN_SENT = 'LOG_IN_SENT'
