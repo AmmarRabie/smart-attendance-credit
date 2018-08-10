@@ -3,28 +3,30 @@ This project was bootstrapped with [Create React Native App](https://github.com/
 Below you'll find information about performing common tasks. The most recent version of this guide is available [here](https://github.com/react-community/create-react-native-app/blob/master/react-native-scripts/template/README.md).
 
 ## Table of Contents
-
-* [Updating to New Releases](#updating-to-new-releases)
-* [Available Scripts](#available-scripts)
-  * [npm start](#npm-start)
-  * [npm test](#npm-test)
-  * [npm run ios](#npm-run-ios)
-  * [npm run android](#npm-run-android)
-  * [npm run eject](#npm-run-eject)
-* [Writing and Running Tests](#writing-and-running-tests)
-* [Environment Variables](#environment-variables)
-  * [Configuring Packager IP Address](#configuring-packager-ip-address)
-* [Customizing App Display Name and Icon](#customizing-app-display-name-and-icon)
-* [Sharing and Deployment](#sharing-and-deployment)
-  * [Publishing to Expo's React Native Community](#publishing-to-expos-react-native-community)
-  * [Building an Expo "standalone" app](#building-an-expo-standalone-app)
-  * [Ejecting from Create React Native App](#ejecting-from-create-react-native-app)
-    * [Build Dependencies (Xcode & Android Studio)](#build-dependencies-xcode-android-studio)
-    * [Should I Use ExpoKit?](#should-i-use-expokit)
-* [Troubleshooting](#troubleshooting)
-  * [Networking](#networking)
-  * [iOS Simulator won't open](#ios-simulator-wont-open)
-  * [QR Code does not scan](#qr-code-does-not-scan)
+* npm
+ * [Updating to New Releases](#updating-to-new-releases)
+ * [Available Scripts](#available-scripts)
+   * [npm start](#npm-start)
+   * [npm test](#npm-test)
+   * [npm run ios](#npm-run-ios)
+   * [npm run android](#npm-run-android)
+   * [npm run eject](#npm-run-eject)
+ * [Writing and Running Tests](#writing-and-running-tests)
+ * [Environment Variables](#environment-variables)
+   * [Configuring Packager IP Address](#configuring-packager-ip-address)
+ * [Customizing App Display Name and Icon](#customizing-app-display-name-and-icon)
+ * [Sharing and Deployment](#sharing-and-deployment)
+   * [Publishing to Expo's React Native Community](#publishing-to-expos-react-native-community)
+   * [Building an Expo "standalone" app](#building-an-expo-standalone-app)
+   * [Ejecting from Create React Native App](#ejecting-from-create-react-native-app)
+     * [Build Dependencies (Xcode & Android Studio)](#build-dependencies-xcode-android-studio)
+     * [Should I Use ExpoKit?](#should-i-use-expokit)
+ * [Troubleshooting](#troubleshooting)
+   * [Networking](#networking)
+   * [iOS Simulator won't open](#ios-simulator-wont-open)
+   * [QR Code does not scan](#qr-code-does-not-scan)
+* App
+ * [connect to api](# connect-to-api)
 
 ## Updating to New Releases
 
@@ -155,6 +157,8 @@ If you have made use of Expo APIs while working on your project, then those API 
 ## Troubleshooting
 
 ### Networking
+Before going on if you have virtualbox like me see [this](https://github.com/expo/expo/issues/1058#issuecomment-386560171) first
+
 
 If you're unable to load your app on your phone due to a network timeout or a refused connection, a good first step is to verify that your phone and computer are on the same network and that they can reach each other. Create React Native App needs access to ports 19000 and 19001 so ensure that your network and firewall settings allow access from your device to your computer on both of these ports.
 
@@ -199,3 +203,30 @@ There are a few steps you may want to take to troubleshoot these kinds of errors
 If you're not able to scan the QR code, make sure your phone's camera is focusing correctly, and also make sure that the contrast on the two colors in your terminal is high enough. For example, WebStorm's default themes may [not have enough contrast](https://github.com/react-community/create-react-native-app/issues/49) for terminal QR codes to be scannable with the system barcode scanners that the Expo app uses.
 
 If this causes problems for you, you may want to try changing your terminal's color theme to have more contrast, or running Create React Native App from a different terminal. You can also manually enter the URL printed by the packager script in the Expo app's search bar to load it manually.
+
+# APP
+## connect to api
+The api is running on your pc (run locally) so we need to know where is this server. To kown the ip of your pc into the network run this from your cmd (make sure you are connected to any network)
+```
+ipconfig
+```
+this should have output like that
+```
+Wireless LAN adapter Wi-Fi: # search for it if you are connected wireless
+
+   Connection-specific DNS Suffix  . : domain.name
+   Link-local IPv6 Address . . . . . : fe80::412e:ab0:c66b:e99f%11
+   IPv4 Address. . . . . . . . . . . : 192.168.1.5  # this is what we want
+   Subnet Mask . . . . . . . . . . . : 255.255.255.0
+   Default Gateway . . . . . . . . . : 192.168.1.1
+```
+take the ipv4 address and put it in the [config](https://github.com/AmmarRabie/smart-attendance-credit/blob/master/config.json) file.
+make sure you don't delete the port specification. so the server_ip value should be like
+```
+"server_ip" : "192.168.1.5:5000"
+```
+not 
+```
+"server_ip" : "192.168.1.5"
+```
+Also note that your ip in the network may differ every time you connect and definitely the network you are connected to.
