@@ -20,22 +20,18 @@ class Lecture(db.Model):
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
     # def __repr__(self):
-    #     return '<Post %r>' % self.attendanceStatusOpen    
+    #     return '<Lecture %r>' % self.attendanceStatusOpen
     
 
 
-class StdAttendace(db.Model):
+class StdAttendance(db.Model):
     student_id = db.Column(db.Integer, primary_key=True)
     lecture_id = db.Column(db.Integer, db.ForeignKey('lecture.id'), primary_key=True)
     isAttend = db.Column(db.Boolean, nullable=False)
     lecture = db.relationship('Lecture',
-        backref=db.backref('attendance', lazy=True))
+        backref=db.backref('attendance', lazy=True, cascade="all, delete-orphan"))
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
-    def getStudentInfo(self):
-        return {'student_id': self.student_id, 'isAttend': self.isAttend}
-    # def __repr__(self):
-    #     return '<Post %r>' % self.isAttend
 
 
 def professor(f):
@@ -46,6 +42,13 @@ def professor(f):
     return decorated
 
 def student(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        # validate the token
+        return f(*args, **kwargs)
+    return decorated
+
+def user(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         # validate the token
@@ -92,26 +95,42 @@ def getAllCodes():
             codesRote.append(codeElement)
     return ET.tostring(codesRote).decode()
 
+# note that attendance only returned for studnets currently in the schedule, meaning that if student attend in lecture of
+# schedule and then unregistered from this schedule will not be came back in attendance list
 @app.route('/lecture.json/<lecture_id>')
-def getLectureInfo_Json(lecture_id, jsonify=True):
+def getLectureInfo_Json(lecture_id, shouldJsonify=True):
     lecture = Lecture.query.filter_by(id=lecture_id).first()
-
-    r = requests.get('https://std.eng.cu.edu.eg/schedules.aspx/?s=' + lecture.schedule_id.__str__())
-    root = ET.fromstring(r.text)
-    #for student in root.findall('Student'):
-       #if (student.find('StdCode').text != student_id):   
+    if (not lecture):
+        return jsonify({'err': 'no such lecture'}), 404
+    # find lecture attendance
     attendance = lecture.attendance
     attendanceList = []
     for att in attendance:
-        attendanceList.append(att.getStudentInfo())
-    lecture.schedule_id
-    json = {'id': lecture.id, 'status': lecture.attendanceStatusOpen, 'att': attendanceList}
-    return jsonify({'Lecture': json}) if jsonify else json
+        if (att.isAttend):
+            attendanceList.append(str(att.student_id))
+
+
+    studentAttendanceData = []
+    url = 'https://std.eng.cu.edu.eg/schedules.aspx/?s=' + lecture.schedule_id.__str__()
+    print('fetching from: %r' %url)
+    r = requests.get(url)
+    print('return from: %r' %url)
+    root = ET.fromstring(r.text)
+    for student in root.findall('Student'): # for every student in this schedule find if it attend or not
+        currentId = student.find('StdCode').text
+        studentAttendanceData.append({
+            'id': currentId,
+            'name': student.find('StdNameArabic').text,
+            'attend': currentId in attendanceList
+        })
+
+    json = {'id': lecture.id, 'status': lecture.attendanceStatusOpen,'schedule_id': lecture.schedule_id, 'att': studentAttendanceData}
+    return jsonify({'Lecture': json}) if shouldJsonify else json
 
 @app.route('/lecture/<lecture_id>')
 @app.route('/lecture.xml/<lecture_id>')
 def getLectureInfo(lecture_id):
-    return dicttoxml(getLectureInfo_Json(lecture_id, jsonify=False), attr_type=False, custom_root='Lecture')
+    return dicttoxml(getLectureInfo_Json(lecture_id, shouldJsonify=False), attr_type=False, custom_root='Lecture')
 
 @app.route('/lecture/new/<schedule_id>', methods=['post'])
 @professor
@@ -125,20 +144,57 @@ def insertLecture(schedule_id):
 @app.route('/changeStatus/<lecture_id>/<status>', methods=['post'])
 @professor
 def changeLectureStatus(lecture_id, status):
-    # should validate here the schedule id, but it requires fetching large data to only validate
+    # should validate that he is the owner!!
     lecture = Lecture.query.filter_by(id=lecture_id).first()
-    lecture.attendanceStatusOpen
-    db.session.add(newL)
+    if (not lecture):
+        return jsonify({'err': 'no such lecture'}), 404
+    lecture.attendanceStatusOpen = (False,True)[int(status)]
     db.session.commit()
-    return jsonify({'id': newL.id}), 202
+    return jsonify({'mes': 'lecture updated successfully'}), 200
+
+@app.route('/attendance/<student_id>/<lecture_id>/<isAttend>')
+@user
+def changeStdAttendance(student_id, lecture_id, isAttend):
+    # [TODO]: make sure that if the user is student, he update his attendance only
+    lecture = Lecture.query.filter_by(id=lecture_id).first()
+    if (not lecture):
+        return jsonify({'err': 'no such lecture'}), 404
+
+    if (lecture.attendanceStatusOpen == False):
+        return jsonify({'err': 'not allowed, attendance is closed now'}), 403
+
+    for att in lecture.attendance:
+        if (str(att.student_id) == student_id):
+            att.isAttend = bool(int(isAttend))
+            db.session.add(lecture)
+            db.session.commit()
+            return jsonify({'mes': 'attendance updated successfully'}), 200
+    
+    url = 'https://std.eng.cu.edu.eg/schedules.aspx/?s=' + str(lecture.schedule_id)
+    print('fetching from: %r' %url)
+    r = requests.get(url)
+    print('return from: %r' %url)
+    root = ET.fromstring(r.text)
+    for student in root.findall('Student'): # for every student in this schedule find if it attend or not
+        currentId = student.find('StdCode').text
+        if (currentId == student_id):
+            lecture.attendance.append(StdAttendace(student_id=student_id, lecture_id=lecture_id, isAttend=bool(int(isAttend))))
+            db.session.add(lecture)
+            db.session.commit()
+            return jsonify({'mes': 'attendance updated successfully'}), 200
+
+    return jsonify({'err': 'no such student'}), 404
 
 @app.route('/submit/<lecture_id>', methods=['post'])
+@professor
 def submitLectureAttendance(lecture_id):
+    # [TODO]: should be the owner of the lecture
+    attendanceXml = dicttoxml(getLectureInfo_Json(lecture_id, shouldJsonify = False).get('att'), custom_root='LectureAttendance')
+    # [TODO]: call here faculty api and send the attendance
+    submittedLecture = Lecture.query.filter_by(id=lecture_id).first()
+    db.session.delete(submittedLecture)
+    db.session.commit()
     return jsonify({'err': 'submitAttendance not implemented yet'}), 404
-
-# student:
-#  getMyAvailableLectures(stdId),
-#  changeStdAttendance(stdId, lecId)[security: validate student, validate status]
 
 @app.route('/<student_id>/lectures')
 def getStdAvailableLectures(student_id):
