@@ -11,3 +11,4 @@
 /.vscode
 /Pipfile.lock
 /Pipfile
+/__pycache__/*

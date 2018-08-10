@@ -7,14 +7,18 @@ from flask_sqlalchemy import SQLAlchemy
 from dicttoxml import dicttoxml
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mssql+pyodbc://AMMAR\SQLEXPRESS/test_from_api?driver=ODBC+Driver+11+for+SQL+Server'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mssql+pyodbc://AMMAR\SQLEXPRESS/test_creditSmartAttendance?driver=ODBC+Driver+11+for+SQL+Server'
 db = SQLAlchemy(app)
 
-
+# schedule = course => refer to the slot in the faculty table like 'lecture math at wednesday'
+# lecture = session => refer to an instance of a schedule like 'lecture math at wednesday second weak of term'
 class Lecture(db.Model):
     __tableName__ = 'Lecture'
     id = db.Column(db.Integer, primary_key=True)
+    schedule_id = db.Column(db.Integer) # schedule this lecture belongs to
     attendanceStatusOpen = db.Column(db.Boolean, nullable=False)
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
     # def __repr__(self):
     #     return '<Post %r>' % self.attendanceStatusOpen    
     
@@ -27,10 +31,26 @@ class StdAttendace(db.Model):
     lecture = db.relationship('Lecture',
         backref=db.backref('attendance', lazy=True))
     def as_dict(self):
-        return {c.name: getattr(self, c.name) for c in self.__table__.columns}        
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+    def getStudentInfo(self):
+        return {'student_id': self.student_id, 'isAttend': self.isAttend}
     # def __repr__(self):
     #     return '<Post %r>' % self.isAttend
 
+
+def professor(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        # validate the token
+        return f(*args, **kwargs)
+    return decorated
+
+def student(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        # validate the token
+        return f(*args, **kwargs)
+    return decorated
 
 @app.route('/courses-available')
 def getCoursesAvailable():
@@ -41,7 +61,7 @@ def getCoursesAvailable():
     day = request.args.get('day')
     sessionType = request.args.get('type')
 
-    # get all schedules data 
+    # get all schedules data
     r = requests.get('https://std.eng.cu.edu.eg/schedules.aspx/?s=0')
     root = ET.fromstring(r.text)
 
@@ -53,7 +73,7 @@ def getCoursesAvailable():
     filterWithChild(root, 'EndTime', endTime)
 
     # log the size
-    print("len of schedules returned: " + root.getchildren().__len__())   
+    print("len of schedules returned: " + root.getchildren().__len__().__str__())   
 
     return ET.tostring(root).decode()
 
@@ -72,43 +92,78 @@ def getAllCodes():
             codesRote.append(codeElement)
     return ET.tostring(codesRote).decode()
 
-@app.route('/attendance/<lecture_id>')
-def getStudnetAttendance(lecture_id): 
-    return jsonify({'err': 'getStudnetAttendance not implemented yet'}), 404
-
-@app.route('/submit/<lecture_id>', methods=['post'])
-def submitAttendance(lecture_id):
-    return jsonify({'err': 'submitAttendance not implemented yet'}), 404
-
-@app.route('/codes')
-def getAttendanceStatus():
-    return jsonify({'err': 'not implemented yet'}), 404
-
 @app.route('/lecture.json/<lecture_id>')
 def getLectureInfo_Json(lecture_id, jsonify=True):
     lecture = Lecture.query.filter_by(id=lecture_id).first()
+
+    r = requests.get('https://std.eng.cu.edu.eg/schedules.aspx/?s=' + lecture.schedule_id.__str__())
+    root = ET.fromstring(r.text)
+    #for student in root.findall('Student'):
+       #if (student.find('StdCode').text != student_id):   
     attendance = lecture.attendance
     attendanceList = []
     for att in attendance:
-        attendanceList.append(att.as_dict())
-    json = {'Lecture': {'id': lecture.id, 'status': lecture.attendanceStatusOpen, 'att': attendanceList}}
+        attendanceList.append(att.getStudentInfo())
+    lecture.schedule_id
+    json = {'id': lecture.id, 'status': lecture.attendanceStatusOpen, 'att': attendanceList}
     return jsonify({'Lecture': json}) if jsonify else json
 
 @app.route('/lecture/<lecture_id>')
 @app.route('/lecture.xml/<lecture_id>')
 def getLectureInfo(lecture_id):
-    return dicttoxml(getLectureInfo_Json(lecture_id, jsonify=False), attr_type=False)
+    return dicttoxml(getLectureInfo_Json(lecture_id, jsonify=False), attr_type=False, custom_root='Lecture')
 
-@app.route('/lecture/new', methods=['post'])
-def insertLecture(lecture_id):
+@app.route('/lecture/new/<schedule_id>', methods=['post'])
+@professor
+def insertLecture(schedule_id):
+    # should validate here the schedule id, but it requires fetching large data to only validate
+    newL = Lecture(schedule_id=schedule_id, attendanceStatusOpen=False)
+    db.session.add(newL)
+    db.session.commit()
+    return jsonify({'id': newL.id}), 202
+
+@app.route('/changeStatus/<lecture_id>/<status>', methods=['post'])
+@professor
+def changeLectureStatus(lecture_id, status):
+    # should validate here the schedule id, but it requires fetching large data to only validate
+    lecture = Lecture.query.filter_by(id=lecture_id).first()
+    lecture.attendanceStatusOpen
+    db.session.add(newL)
+    db.session.commit()
+    return jsonify({'id': newL.id}), 202
+
+@app.route('/submit/<lecture_id>', methods=['post'])
+def submitLectureAttendance(lecture_id):
     return jsonify({'err': 'submitAttendance not implemented yet'}), 404
+
+# student:
+#  getMyAvailableLectures(stdId),
+#  changeStdAttendance(stdId, lecId)[security: validate student, validate status]
+
+@app.route('/<student_id>/lectures')
+def getStdAvailableLectures(student_id):
+    openLectures = Lecture.query.filter_by(attendanceStatusOpen=True)
+    lectures = []
+    for lecture in openLectures:
+        print('[Lecture]: ')
+        print(lecture.id)
+        r = requests.get('https://std.eng.cu.edu.eg/schedules.aspx/?s=' + lecture.schedule_id.__str__())
+        root = ET.fromstring(r.text)
+        for student in root.findall('Student'):
+            if (student.find('StdCode').text != student_id):
+                continue
+            lectures.append({'Lecture': lecture.as_dict()})
+            # uncomment break if you want only first lecture
+            # break
+    return  jsonify({'Lectures': lectures})
+
 
 @app.route('/login')
 def login():
     auth = request.authorization
 
     if not auth or not auth.username or not auth.password:
-        return jsonify({'mes': "you should enter username and password"}), 400
+        return jsonify({'err': "you should enter username and password"}), 401
     
     userId = auth.username
     password = auth.password
@@ -143,6 +198,6 @@ def filterWithChild(root, key, value):
 
 if __name__ == "__main__":
     # use it when you want to run the api from the application
-    # app.run(debug=True, host='0.0.0.0')
+     app.run(debug=True, host='0.0.0.0')
     # use it when you want to run the api from your browser on pc
-    app.run(debug=True)
+    # app.run(debug=True)
