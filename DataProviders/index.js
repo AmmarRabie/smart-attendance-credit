@@ -38,3 +38,27 @@ const login = async (id, password) => {
 }
 
 export default login
+
+
+export const fetchCodes = async () => {
+    let headers = new Headers()
+    const response = await fetch(`http://${CONFIG.server_ip}/codes`, {
+        method: 'GET',
+        headers: headers})
+
+    
+    if (response.status == 200) {
+
+        const text_codes = await response.text()
+        
+        let modified_codes = text_codes.replace(/<codes>/g, '').replace(/<\/codes>/g, '')
+        .replace(/<Code>/g, '').replace(/<\/Code>/g,'').replace(/ /g,'')
+         
+        codes = modified_codes.match(/.{1,4}/g);
+
+        return codes
+    }
+    const { error } = await response.text()
+    throw new Error(error)
+}
+
