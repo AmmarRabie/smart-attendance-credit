@@ -48,9 +48,10 @@ const AppNavigator = createSwitchNavigator(
     Auth: AuthScreen,
     ProfApp: ProfAppNavigator,
     StdApp: StdAppNavigator,
+    Courses: CoursesScreen
   },
   {
-    initialRouteName: 'Auth',
+    initialRouteName: 'Courses',
   }
 );
 
