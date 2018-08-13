@@ -4,15 +4,31 @@ import logging as Log
 import xml.etree.ElementTree as ET
 import requests
 from flask_sqlalchemy import SQLAlchemy
-from dicttoxml import dicttoxml
+from dicttoxml import dicttoxml as xmlify
+from xmltodict import parse as xmltodic #, unparse as xmlify2
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mssql+pyodbc://AMMAR\SQLEXPRESS/test_creditSmartAttendance?driver=ODBC+Driver+11+for+SQL+Server'
 db = SQLAlchemy(app)
 
+def routeJsonAndXml(url, root='root'):
+    def decorator(f):
+        def jsonRes(*args, **kwargs):
+            return jsonify({root: f(*args, **kwargs)})
+        def xmlRes(*args, **kwargs):
+            return xmlify(f(*args, **kwargs), custom_root=root, attr_type=False)
+        jsonRes.__name__ = f.__name__ + 'Json'
+        xmlRes.__name__ = f.__name__ + 'Xml'
+        
+        app.route(url.format('json'))(jsonRes)
+        app.route(url.format('xml'))(xmlRes)
+    return decorator
+
 # schedule = course => refer to the slot in the faculty table like 'lecture math at wednesday'
 # lecture = session => refer to an instance of a schedule like 'lecture math at wednesday second weak of term'
 class Lecture(db.Model):
+    # [TODO]: should support the owner
+    # [TODO]: should support the lecture status, may be the lecture it self is pended so students can't find it
     __tableName__ = 'Lecture'
     id = db.Column(db.Integer, primary_key=True)
     schedule_id = db.Column(db.Integer) # schedule this lecture belongs to
@@ -55,7 +71,7 @@ def user(f):
         return f(*args, **kwargs)
     return decorated
 
-@app.route('/courses-available')
+@routeJsonAndXml('/courses-available.{}', root='courses')
 def getCoursesAvailable():
     # get parameters
     code = request.args.get('code')
@@ -76,29 +92,26 @@ def getCoursesAvailable():
     filterWithChild(root, 'EndTime', endTime)
 
     # log the size
-    print("len of schedules returned: " + root.getchildren().__len__().__str__())   
+    print("len of schedules returned: ", root.getchildren().__len__())
+    return xmltodic(ET.tostring(root).decode())['AllSchedules']['Schedule']
 
-    return ET.tostring(root).decode()
-
-@app.route('/codes')
+@routeJsonAndXml('/codes.{}', root='codes')
 def getAllCodes():
     r = requests.get('https://std.eng.cu.edu.eg/schedules.aspx/?s=0')
     print('at getAllCodes: data received from api')
     allData = ET.fromstring(r.text)
-    codesRote = ET.fromstring('<codes> </codes>')
     uniqueCodes = []
     for schedule in allData:
         codeElement = schedule.find('Code')
         codeElement.text = codeElement.text[0:3]
         if (codeElement.text not in uniqueCodes):
             uniqueCodes.append(codeElement.text)
-            codesRote.append(codeElement)
-    return ET.tostring(codesRote).decode()
+    return uniqueCodes
 
 # note that attendance only returned for studnets currently in the schedule, meaning that if student attend in lecture of
 # schedule and then unregistered from this schedule will not be came back in attendance list
-@app.route('/lecture.json/<lecture_id>')
-def getLectureInfo_Json(lecture_id, shouldJsonify=True):
+@routeJsonAndXml('/lecture.{}/<lecture_id>', 'lecture')
+def getLectureInfo(lecture_id):
     lecture = Lecture.query.filter_by(id=lecture_id).first()
     if (not lecture):
         return jsonify({'err': 'no such lecture'}), 404
@@ -111,7 +124,7 @@ def getLectureInfo_Json(lecture_id, shouldJsonify=True):
 
 
     studentAttendanceData = []
-    url = 'https://std.eng.cu.edu.eg/schedules.aspx/?s=' + lecture.schedule_id.__str__()
+    url = 'https://std.eng.cu.edu.eg/schedules.aspx/?s={}'.format(lecture.schedule_id)
     print('fetching from: %r' %url)
     r = requests.get(url)
     print('return from: %r' %url)
@@ -123,14 +136,7 @@ def getLectureInfo_Json(lecture_id, shouldJsonify=True):
             'name': student.find('StdNameArabic').text,
             'attend': currentId in attendanceList
         })
-
-    json = {'id': lecture.id, 'status': lecture.attendanceStatusOpen,'schedule_id': lecture.schedule_id, 'att': studentAttendanceData}
-    return jsonify({'Lecture': json}) if shouldJsonify else json
-
-@app.route('/lecture/<lecture_id>')
-@app.route('/lecture.xml/<lecture_id>')
-def getLectureInfo(lecture_id):
-    return dicttoxml(getLectureInfo_Json(lecture_id, shouldJsonify=False), attr_type=False, custom_root='Lecture')
+    return {'id': lecture.id, 'status': lecture.attendanceStatusOpen,'schedule_id': lecture.schedule_id, 'att': studentAttendanceData}
 
 @app.route('/lecture/new/<schedule_id>', methods=['post'])
 @professor
@@ -178,7 +184,7 @@ def changeStdAttendance(student_id, lecture_id, isAttend):
     for student in root.findall('Student'): # for every student in this schedule find if it attend or not
         currentId = student.find('StdCode').text
         if (currentId == student_id):
-            lecture.attendance.append(StdAttendace(student_id=student_id, lecture_id=lecture_id, isAttend=bool(int(isAttend))))
+            lecture.attendance.append(StdAttendance(student_id=student_id, lecture_id=lecture_id, isAttend=bool(int(isAttend))))
             db.session.add(lecture)
             db.session.commit()
             return jsonify({'mes': 'attendance updated successfully'}), 200
@@ -189,21 +195,22 @@ def changeStdAttendance(student_id, lecture_id, isAttend):
 @professor
 def submitLectureAttendance(lecture_id):
     # [TODO]: should be the owner of the lecture
-    attendanceXml = dicttoxml(getLectureInfo_Json(lecture_id, shouldJsonify = False).get('att'), custom_root='LectureAttendance')
+    attendanceXml = xmlify(getLectureInfo(lecture_id).get('att'), custom_root='LectureAttendance')
     # [TODO]: call here faculty api and send the attendance
     submittedLecture = Lecture.query.filter_by(id=lecture_id).first()
     db.session.delete(submittedLecture)
     db.session.commit()
     return jsonify({'err': 'submitAttendance not implemented yet'}), 404
 
-@app.route('/<student_id>/lectures')
+@routeJsonAndXml('/<student_id>/lectures.{}', root='lectures')
 def getStdAvailableLectures(student_id):
     openLectures = Lecture.query.filter_by(attendanceStatusOpen=True)
     lectures = []
     for lecture in openLectures:
         print('[Lecture]: ')
         print(lecture.id)
-        r = requests.get('https://std.eng.cu.edu.eg/schedules.aspx/?s=' + lecture.schedule_id.__str__())
+        # [TODO]: may be more than lecture have the same schedule id!!, it shouldn't be only one open 
+        r = requests.get('https://std.eng.cu.edu.eg/schedules.aspx/?s={}'.format(lecture.schedule_id))
         root = ET.fromstring(r.text)
         for student in root.findall('Student'):
             if (student.find('StdCode').text != student_id):
@@ -211,7 +218,7 @@ def getStdAvailableLectures(student_id):
             lectures.append({'Lecture': lecture.as_dict()})
             # uncomment break if you want only first lecture
             # break
-    return  jsonify({'Lectures': lectures})
+    return lectures
 
 
 @app.route('/login')

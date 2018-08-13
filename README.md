@@ -4,15 +4,15 @@ smart attendance customized for credit hours systems in CUFE
 
 This is the main branch for the api our mobile application will use. So, we will only hit urls available here and not the faculty api itself.
 
-As you can expected, this api is responsilbe for interfacing with the attendance database and the faculty api.
+As you can expected, this api is responsible for interfacing with the attendance database and the faculty api.
 ## Why only one api for the app
-It may be not the ideal idea, but think of if manager wants to only stop using this attendance system, then he can easly only stop this
+It may be not the ideal idea, but think of if manager wants to only stop using this attendance system, then he can easily only stop this
 api from running.
 Also dealing with only api from the app will be more convenient and modular.
 # How to start for developers
 Now we only have one file called App.py which holding all the logic. We are building this api using flask framework and 
-SqlAlchemy for easy creating and intefacing our new database. And any requests or response are formatted in xml format either from faculty api or our api itsel, so I use a lib for
-easly interacting with it. As our api is very small and easy, we need only the introduction tutorials of these three libs (Flask, SqlAlchemy, ElementTree XML).
+SqlAlchemy for easy creating and interfacing our new database. And any requests or response are formatted in xml format either from faculty api or our api itself, so I use a lib for
+easily interacting with it. As our api is very small and easy, we need only the introduction tutorials of these three libs (Flask, SqlAlchemy, ElementTree XML).
 You can go ahead and search for every you want, I suggest these tutorials
 * [Flask](https://blog.miguelgrinberg.com/post/designing-a-restful-api-with-python-and-flask)
 * [SqlAlchemy](http://flask-sqlalchemy.pocoo.org/2.3/quickstart/#a-minimal-application)
@@ -20,18 +20,18 @@ You can go ahead and search for every you want, I suggest these tutorials
 * [requests](https://medium.com/@patrickcremin/http-requests-in-javascript-and-python-92b718b43b98) for dealing with the faculty api
 
 # How to run it
-before you run the main python file `App.py`, you need first to [create virtual enviroment](#create-virtual-enviroment) having all dependencies in [requirements.txt](https://github.com/AmmarRabie/smart-attendance-credit/blob/api/requirements.txt) and [create the database.](#create-database)
+before you run the main python file `App.py`, you need first to [create virtual environment](#create-virtual-environment) having all dependencies in [requirements.txt](https://github.com/AmmarRabie/smart-attendance-credit/blob/api/requirements.txt) and [create the database.](#create-database)
 
-## create virtual enviroment
+## create virtual environment
 ### Setup
 point to the api dir and run this command
 ```
 python -m venv venv
 ```
-first venv in the command refer to the module that make the virtual enviroment and we call it venv. don't change the name of it so that not to update .gitignore file for every developer.
+first venv in the command refer to the module that make the virtual environment and we call it venv. don't change the name of it so that not to update .gitignore file for every developer.
 
 ### activate
-Now enviroment is created but we still run globally, to run from it we need no activate first. So run these cmds from api dir
+Now environment is created but we still run globally, to run from it we need no activate first. So run these cmds from api dir
 ```
 cd venv/Scripts/
 activate
@@ -39,7 +39,7 @@ cd..
 cd..
 ```
 ### install dependencies
-After creating the enviroment, we need to setup all modules we need which is found in the requirements.txt file. Run this command to do so
+After creating the environment, we need to setup all modules we need which is found in the requirements.txt file. Run this command to do so
 ```
 pip install -r requirements.txt
 ```
@@ -59,7 +59,7 @@ python createDB.py
 ```
 if no error you should see two tables and dummy values in it from sql server (refresh the database first)
 ## Run the server
-To run the api, you want to run it from a virtual enviroment hasing all dependencies as we did above.
+To run the api, you want to run it from a virtual environment having all dependencies as we did above.
 * activate the venv.
 * point to the root dir.
 * run the App.py using 'python App.py' command.

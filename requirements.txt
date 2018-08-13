@@ -19,7 +19,6 @@ MarkupSafe==1.0
 mccabe==0.6.1
 pycodestyle==2.4.0
 pycparser==2.18
-PyJWT==1.4.2
 pylint==2.1.1
 pyodbc==4.0.23
 requests==2.19.1
@@ -32,3 +31,4 @@ virtualenv==16.0.0
 virtualenv-clone==0.3.0
 Werkzeug==0.14.1
 wrapt==1.10.11
+xmltodict==0.11.0
