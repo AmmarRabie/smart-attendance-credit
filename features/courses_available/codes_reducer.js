@@ -1,7 +1,7 @@
 import {
     GET_CODES_BEGIN,
     GET_CODES_SUCCESS,
-    GET_CODES_FAILURE
+    GET_CODES_FAILURE,
 } from './actinos';
 
 
@@ -11,9 +11,11 @@ const getCodesInitialState = {
     error: null
 };
 
+
+
 const merge = (prev, next) => Object.assign({}, prev, next)
 
-const codesReducer = (state = getCodesInitialState, action) => {
+ const codesReducer = (state = getCodesInitialState, action) => {
     switch (action.type) {
         case GET_CODES_BEGIN:
             return {
@@ -25,13 +27,13 @@ const codesReducer = (state = getCodesInitialState, action) => {
             return {
                 ...state,
                 loading: false,
-                codes: action.payload.codes
+                codes: action.payload
             };
         case GET_CODES_FAILURE:
             return {
                 ...state,
                 loading: false,
-                error: action.payload.error,
+                error: action.payload,
                 codes: []
             };
         default:
@@ -41,3 +43,4 @@ const codesReducer = (state = getCodesInitialState, action) => {
 }
 
 export default codesReducer
+
