@@ -5,6 +5,11 @@ import {
 } from './actinos';
 
 
+/// for every asyncronous action there is three variable
+// 1- the result of the action 
+//2- flag indicates error 
+//3- flag indicates the action is running or not
+
 const getCodesInitialState = {
     codes: [],
     loading: true,

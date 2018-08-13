@@ -64,7 +64,7 @@ export const fetchCodes = async () => {
 
 export const fetchSchedules = async (type,code) => {
     let headers = new Headers()
-    console.log(`http://${CONFIG.server_ip}/courses-available?code=${encodeURIComponent(type)}&type=${encodeURIComponent(code)}`)
+    console.log(`http://${CONFIG.server_ip}/courses-available?type=${encodeURIComponent(code)}&code=${encodeURIComponent(type)}`)
     const response = await fetch(`http://${CONFIG.server_ip}/courses-available?type=${encodeURIComponent(code)}&code=${encodeURIComponent(type)}`, {
         method: 'GET',
         headers: headers
@@ -76,7 +76,10 @@ export const fetchSchedules = async (type,code) => {
 
         console.log(text_codes)
 
-        // example of the wanted json
+        // important ************
+        // this part of the code  need to be rewritten after we get the response of the api as json 
+        // also the component SchedulesList   
+        // important *************
         return [
                    {},
                    {}

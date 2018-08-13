@@ -64,15 +64,18 @@ class CoursesScreen extends React.Component {
         }
     }
 
-    
+   // fetch the codes before the screen show ups
     componentWillMount()
     {
         this._getcodes();
     }
 
-    GetSelectedCode = () => {
-        Alert.alert(this.state.code_holder);
+    //  not used now ( i used it to debug )
+    alertPickersValues = (error_msg) => {
+        Alert.alert(error_msg);
     }
+
+    // function that updates the value of the picker
     UpdateSelectedCode = (itemValue, itemIndex) => {
         if (itemIndex===0)
         {
@@ -83,6 +86,7 @@ class CoursesScreen extends React.Component {
         this.setState({ code_holder: itemValue })
         }
     }
+    // function that updates the value of the picker
 
     UpdateSelectedTurorialType = (itemValue, itemIndex) => {
         if (itemIndex===0)
@@ -96,12 +100,14 @@ class CoursesScreen extends React.Component {
         }
     }
 
-    
+    // to render codes list 
     loadcodes(codes) {
         return codes.map((code, index) => (
             <Picker.Item label={code} value={code} key={index} />
         ))
     }
+
+    // to render session types
     loadTutorialsTypes ()
     {
         return this.state.tutorials_types_list.map((tutorial, index) => (
@@ -116,9 +122,22 @@ class CoursesScreen extends React.Component {
         type=this.state.tutorial_type_holder
         code=this.state.code_holder
         if (code!==''&&type!=='')
+        {
         this.props.GetWantedSchedules(type,code)
+        }
+        else
+        {
+            this.alertPickersValues(" you must choose a code and a type ")
+        }
     }
 
+
+    // ********** To Render the Schedules List ****************
+    // There is three cases 
+    // 1- there is error happend while fetching ( not handled in this function (handled in the main render function))
+    // 2- schedules still loading
+    // 3- schedules list empty
+    // 4- schedules list have some elements
     schedulesRender(schedules,schedules_loading)
     {
          if (schedules_loading) {
@@ -143,6 +162,7 @@ class CoursesScreen extends React.Component {
         }
     }
     
+    // the main render function 
     render() {
         const codes =this.props.codes;
         const codes_loading= this.props.codes_loading;
@@ -154,13 +174,8 @@ class CoursesScreen extends React.Component {
         console.log("schedules = ",schedules, "loading =",schedules_loading," error =",schedules_error)
         console.log("codes = ", codes, "loading =", codes_loading, "error =", codes_error)
 
+
         if (codes_error||schedules_error) {
-            // return (
-            //     <View style={styles.LoadingContainer}>
-            //         <Text style={styles.headline}>  Error !!!! </Text>
-            //         <Text style={styles.headline}>  {String(codes_error)} </Text>
-            //     </View>
-            // )
             return (
                 <Image style={styles.Image} source={require('../../images/error_state.jpg')}>
                 </Image>
@@ -192,14 +207,7 @@ class CoursesScreen extends React.Component {
                         {this.loadTutorialsTypes()}
                     </Picker>
 
-                    <Button
-                        icon={
-                            <Icon
-                                name='arrow-right'
-                                size={15}
-                                color='white'
-                            />
-                        }
+                    <Button 
                         title='BUTTON WITH ICON COMPONENT'
                         onPress={this._getSchedules}
                     />
@@ -211,49 +219,10 @@ class CoursesScreen extends React.Component {
     }
 }
 
-
-const styles = StyleSheet.create({
-    MainContainer: 
-    {
-        flex:1,
-        flexDirection:'column',
-        justifyContent: 'flex-start',
-        backgroundColor: '#EEEEEE',
-    },
-    PickerContainer:
-     {
-        marginRight:0,
-        marginLeft:0,
-    },
-    ListContainer:
-     {
-        flex: 3,
-        justifyContent: 'flex-start',
-        backgroundColor: 'white'
-
-    },
-     LoadingContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        flexDirection: 'column',
-        alignItems:'center',
-         backgroundColor: 'whitesmoke'
-     },
-    headline: {
-        textAlign: 'center', 
-        fontWeight: 'bold',
-        fontSize: 18,
-        marginTop: 0,
-        width: 200,
-        textAlignVertical: "center"
-    },
-    Image: {
-        flex: 3,
-        width: null,
-        height: null,
-        resizeMode: 'stretch',
-    }
-});
+/// for every asyncronous action there is three variable
+// 1- the result of the action 
+//2- flag indicates error 
+//3- flag indicates the action is running or not
 
 const mapStateToProps = state => ({
     codes: state.codes.codes,
@@ -275,4 +244,48 @@ const mapDispatchToProps = dispatch => {
     };
 };
 export default connect(mapStateToProps, mapDispatchToProps )(CoursesScreen)
-///////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////
+
+////// StyleSheet for Courses Screen 
+const styles = StyleSheet.create({
+    MainContainer:
+    {
+        flex: 1,
+        flexDirection: 'column',
+        justifyContent: 'flex-start',
+        backgroundColor: '#EEEEEE',
+    },
+    PickerContainer:
+    {
+        marginRight: 0,
+        marginLeft: 0,
+    },
+    ListContainer:
+    {
+        flex: 3,
+        justifyContent: 'flex-start',
+        backgroundColor: 'white'
+
+    },
+    LoadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        flexDirection: 'column',
+        alignItems: 'center',
+        backgroundColor: 'whitesmoke'
+    },
+    headline: {
+        textAlign: 'center',
+        fontWeight: 'bold',
+        fontSize: 18,
+        marginTop: 0,
+        width: 200,
+        textAlignVertical: "center"
+    },
+    Image: {
+        flex: 3,
+        width: null,
+        height: null,
+        resizeMode: 'stretch',
+    }
+});
