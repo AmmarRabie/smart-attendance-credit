@@ -21,21 +21,21 @@ class SchedulesList extends React.Component {
                         <ListItem
                             roundAvatar
                             avatar={require('../images/university.png')}
-                            key={l.name}
-                            title={l.name}
+                            title={l.Name}
+                            key={l.key}
                             subtitle={
                                 <View>
                                     <View style={styles.subtitleView}>
-                                        <Text style={styles.ratingText}> Code: 11111 </Text>
-                                        <Text style={styles.ratingText}> Schedule ID:</Text>
+                                        <Text style={styles.ratingText}> Code: {l.Code} </Text>
+                                        <Text style={styles.ratingText}> Location: {l.Location}</Text>
                                     </View>
                                     <View style={styles.subtitleView}>
-                                        <Text style={styles.ratingText}> Day: 11111 </Text>
-                                        <Text style={styles.ratingText}> Start: 13</Text>
-                                        <Text style={styles.ratingText}> end: 13</Text>
+                                        <Text style={styles.ratingText}> Day: {l.DayName} </Text>
+                                        <Text style={styles.ratingText}> Start: {l.BeginTime}</Text>
+                                        <Text style={styles.ratingText}> end: {l.EndTime}</Text>
                                     </View>
                                     <View style={styles.subtitleView}>
-                                        <Text style={styles.ratingText}> Session Type: Tutorials </Text>
+                                        <Text style={styles.ratingText}> Session Type: {l.SessionType} </Text>
                                     </View>
                                 </View>
                             }
