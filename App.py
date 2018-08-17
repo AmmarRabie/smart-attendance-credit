@@ -92,8 +92,10 @@ def getCoursesAvailable():
     filterWithChild(root, 'EndTime', endTime)
 
     # log the size
-    print("len of schedules returned: ", root.getchildren().__len__())
-    return xmltodic(ET.tostring(root).decode())['AllSchedules']['Schedule']
+    print("len of schedules returned: ", len(root.getchildren()))
+    resultList = xmltodic(ET.tostring(root).decode())['AllSchedules']
+    resultList = resultList['Schedule'] if resultList != None else []
+    return resultList if type(resultList) is list else [resultList] 
 
 @routeJsonAndXml('/codes.{}', root='codes')
 def getAllCodes():
@@ -246,14 +248,14 @@ def login():
 ############################################ Helpers ################################################################################
 
 def filterCode(root, codeValue):
-    if (codeValue is None): return
+    if (codeValue is None or codeValue.strip() == ''): return
     for child in root.findall('Schedule'):
         if (not (child.find('Code').text[0:3] == codeValue)):
             root.remove(child)
 
 def filterWithChild(root, key, value):
     print('filterWithChild')
-    if (value is None): return
+    if (value is None or value.strip() == ''): return
     for child in root.findall('Schedule'):
         if (not (child.find(key).text.strip() == value)):
             root.remove(child)
