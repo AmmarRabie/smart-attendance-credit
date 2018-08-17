@@ -42,20 +42,14 @@ export default login
 
 export const fetchCodes = async () => {
     let headers = new Headers()
-    const response = await fetch(`http://${CONFIG.server_ip}/codes`, {
+    const response = await fetch(`http://${CONFIG.server_ip}/codes.json`, {
         method: 'GET',
         headers: headers})
 
     
     if (response.status == 200) {
-
-        const text_codes = await response.text()
-        
-        let modified_codes = text_codes.replace(/<codes>/g, '').replace(/<\/codes>/g, '')
-        .replace(/<Code>/g, '').replace(/<\/Code>/g,'').replace(/ /g,'')
-         
-       let codes = modified_codes.match(/.{1,3}/g);
-         codes.unshift(" Please choose department ");
+        const {codes} = await response.json()
+        //codes.unshift(" Please choose department ");
         return codes
     }
     const { error } = await response.text()
@@ -63,29 +57,21 @@ export const fetchCodes = async () => {
 }
 
 export const fetchSchedules = async (type,code) => {
-    let headers = new Headers()
-    console.log(`http://${CONFIG.server_ip}/courses-available?type=${encodeURIComponent(code)}&code=${encodeURIComponent(type)}`)
-    const response = await fetch(`http://${CONFIG.server_ip}/courses-available?type=${encodeURIComponent(code)}&code=${encodeURIComponent(type)}`, {
+    const url = `http://${CONFIG.server_ip}/courses-available.json?type=${encodeURIComponent(type)}&code=${encodeURIComponent(code)}`
+    console.log(url)
+    const response = await fetch(url, {
         method: 'GET',
-        headers: headers
     })
 
     if (response.status == 200) {
-
-        const text_codes = await response.text()
-
-        console.log(text_codes)
 
         // important ************
         // this part of the code  need to be rewritten after we get the response of the api as json 
         // also the component SchedulesList   
         // important *************
-        return [
-                   {},
-                   {}
-               ]
+        const {courses} = await response.json()
+        return courses// [TODO]: force it to be list even it is one item
     }
-    const { error } = await response.text()
+    const { error } = response.json()
     throw new Error(error)
 }
-
