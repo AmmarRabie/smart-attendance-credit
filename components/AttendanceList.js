@@ -13,11 +13,11 @@ class AttendanceList extends React.Component {
     static defaultProps = {
         marginTop: 20,
     }
-     onCheckBoxPressed=(index)=>
+     onCheckBoxPressed=(student_id,index)=>
     {
          let list = this.state.attendanceList.slice(); //creates the clone of the state
          list[index].attend = !list[index].attend
-         console.log("in  pressed")
+         this.props.onAttendanceChange(this.props.lecture_id, student_id, list[index].attend);
          this.setState({ attendanceList: list });
     }
 
@@ -35,13 +35,14 @@ class AttendanceList extends React.Component {
     }
     render() {
 
-        console.log(this.state.attendanceList)
+        //console.log(this.state.attendanceList)
+        
         return (
             <ScrollView marginTop={this.props.marginTop} >
-                <List containerStyle={styles.ListContainer}>
+                <List containerStyle={styles.ListContainer} >
                     {
                         this.state.attendanceList.map((l,index) => (
-                            <ListItem
+                           /* <ListItem
                                 roundAvatar
                                 title={l.name}
                                 key={index}
@@ -49,10 +50,16 @@ class AttendanceList extends React.Component {
                                     <CheckBox
                                         title=''
                                         checked={l.attend}
-
-                                        onPress={() => this.onCheckBoxPressed(index)}
+                                        onPress={() => this.onCheckBoxPressed(l.id,index)}
                                     />
                                 }
+                            />*/
+                            <CustomAttendanceItem 
+                            name={l.name}
+                            index={index}
+                            attend={l.attend}
+                            id={l.id}
+                            onCheckBoxPressed={this.onCheckBoxPressed}
                             />
                         ))
                     }
@@ -62,6 +69,64 @@ class AttendanceList extends React.Component {
 
     }
 
+}
+
+class CustomAttendanceItem extends React.Component {
+
+    constructor(props) {
+        super(props)
+        this.state={
+            attend:false
+        }
+    }
+    componentWillReceiveProps(nextProps) {
+        const {  attend, } = nextProps
+
+        this.setState({
+           attend,
+        })
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        const newAttend = nextState.attend
+        const oldAttend = this.state.attend
+
+        // If "liked" or "likeCount" is different, then update
+        return newAttend !== oldAttend 
+    }
+
+    componentWillMount() {
+        const { attend, } = this.props
+       // console.log('in compinet will mount  ++ ', attend)
+
+        this.setState({
+            attend,
+        })
+    }
+
+
+
+    render()
+    {
+        console.log(this.props.name)
+        console.log(this.props.index)
+        console.log(this.props.id)
+        console.log(this.props.attend)
+        return(
+            <ListItem
+                roundAvatar
+                title={this.props.name}
+                key={this.props.index}
+                avatar={
+                    <CheckBox
+                        title=''
+                        checked={this.state.attend}
+                        onPress={() => this.props.onCheckBoxPressed(this.props.id, this.props.index)}
+                    />
+                }
+            />
+        )
+    }
 }
 
 const styles = StyleSheet.create({
