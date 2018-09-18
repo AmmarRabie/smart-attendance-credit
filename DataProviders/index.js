@@ -75,3 +75,23 @@ export const fetchSchedules = async (type,code) => {
     const { error } = response.json()
     throw new Error(error)
 }
+
+export const fetchLectureAttendance = async (lecture_id) => {
+    const url = `http://${CONFIG.server_ip}/lecture.json/${encodeURIComponent(lecture_id)}`
+    console.log(url)
+    const response = await fetch(url, {
+        method: 'GET',
+    })
+
+    if (response.status == 200) {
+
+        // important ************
+        // this part of the code  need to be rewritten after we get the response of the api as json 
+        // also the component SchedulesList   
+        // important *************
+        const obj  = await response.json()
+        return obj.lecture.att// [TODO]: force it to be list even it is one item
+    }
+    const { error } = response.json()
+    throw new Error(error)
+}

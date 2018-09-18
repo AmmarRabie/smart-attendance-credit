@@ -18,8 +18,6 @@ const getCodesInitialState = {
 
 
 
-const merge = (prev, next) => Object.assign({}, prev, next)
-
  const codesReducer = (state = getCodesInitialState, action) => {
     switch (action.type) {
         case GET_CODES_BEGIN:

@@ -17,7 +17,7 @@ const ProfAppNavigator = createStackNavigator(
     ProfSession: ProfAttendanceScreen, // in future this should be something like tab navigator
   },
   {
-    initialRouteName: 'Courses',
+    initialRouteName: 'ProfSession',
     navigationOptions: {
       headerTintColor: '#a41034',
       headerStyle: {
@@ -51,7 +51,7 @@ const AppNavigator = createSwitchNavigator(
     Courses: CoursesScreen
   },
   {
-    initialRouteName: 'Courses',
+    initialRouteName: 'ProfApp',
   }
 );
 
