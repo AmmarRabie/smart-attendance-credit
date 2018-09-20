@@ -6,6 +6,7 @@ import requests
 from flask_sqlalchemy import SQLAlchemy
 from dicttoxml import dicttoxml as xmlify
 from xmltodict import parse as xmltodic #, unparse as xmlify2
+from datetime import datetime
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mssql+pyodbc://AMMAR\SQLEXPRESS/test_creditSmartAttendance?driver=ODBC+Driver+11+for+SQL+Server'
@@ -14,14 +15,29 @@ db = SQLAlchemy(app)
 def routeJsonAndXml(url, root='root'):
     def decorator(f):
         def jsonRes(*args, **kwargs):
-            return jsonify({root: f(*args, **kwargs)})
+            result = f(*args, **kwargs)
+            status = 200
+            if (type(result) is tuple):
+                status = result[2] or status
+                forcedRoot = result[0]
+                result = result[1] or {''}
+                return jsonify({forcedRoot: result}), status
+            return jsonify({root: result}), status
         def xmlRes(*args, **kwargs):
-            return xmlify(f(*args, **kwargs), custom_root=root, attr_type=False)
+            result = f(*args, **kwargs)
+            status = 200
+            if (type(result) is tuple):
+                status = result[2] or status
+                forcedRoot = result[0]
+                result = result[1] or {''}          
+                return xmlify({'cause': result}, custom_root=forcedRoot, attr_type=False), status
+            return xmlify(result, custom_root=root, attr_type=False), status
         jsonRes.__name__ = f.__name__ + 'Json'
         xmlRes.__name__ = f.__name__ + 'Xml'
         
         app.route(url.format('json'))(jsonRes)
         app.route(url.format('xml'))(xmlRes)
+        return f
     return decorator
 
 # schedule = course => refer to the slot in the faculty table like 'lecture math at wednesday'
@@ -33,6 +49,8 @@ class Lecture(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     schedule_id = db.Column(db.Integer) # schedule this lecture belongs to
     attendanceStatusOpen = db.Column(db.Boolean, nullable=False)
+    owner_id = db.Column(db.String(20)) # professor id (the owner)
+    time_created = db.Column(db.DateTime(), default=datetime.now)
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
     # def __repr__(self):
@@ -116,15 +134,14 @@ def getAllCodes():
 def getLectureInfo(lecture_id):
     lecture = Lecture.query.filter_by(id=lecture_id).first()
     if (not lecture):
-        return jsonify({'err': 'no such lecture'}), 404
+        return 'err', 'no such lecture', 404 # root, result, status
     # find lecture attendance
     attendance = lecture.attendance
     attendanceList = []
     for att in attendance:
         if (att.isAttend):
             attendanceList.append(str(att.student_id))
-
-
+            
     studentAttendanceData = []
     url = 'https://std.eng.cu.edu.eg/schedules.aspx/?s={}'.format(lecture.schedule_id)
     print('fetching from: %r' %url)
@@ -156,6 +173,8 @@ def changeLectureStatus(lecture_id, status):
     lecture = Lecture.query.filter_by(id=lecture_id).first()
     if (not lecture):
         return jsonify({'err': 'no such lecture'}), 404
+    if (not(status == '0' or status == '1')):
+        return jsonify({'err': 'status should be 0 or 1, can\'t be ' + status}), 400
     lecture.attendanceStatusOpen = (False,True)[int(status)]
     db.session.commit()
     return jsonify({'mes': 'lecture updated successfully'}), 200
@@ -193,16 +212,37 @@ def changeStdAttendance(student_id, lecture_id, isAttend):
 
     return jsonify({'err': 'no such student'}), 404
 
-@app.route('/submit/<lecture_id>', methods=['post'])
 @professor
+@app.route('/submit/<lecture_id>', methods=['post'])
 def submitLectureAttendance(lecture_id):
     # [TODO]: should be the owner of the lecture
-    attendanceXml = xmlify(getLectureInfo(lecture_id).get('att'), custom_root='LectureAttendance')
-    # [TODO]: call here faculty api and send the attendance
+
+    lecture = getLectureInfo(lecture_id)
+    if (type(lecture) is tuple): # there is an error ocurred
+        return jsonify({'err': lecture[1]}), 404
+
+    url = 'http://chws.eng.cu.edu.eg/webservice1.asmx?op=GetData'
+    contentType = 'application/soap+xml; charset=utf-8'
+    attendanceDataFormated = formatAttendanceFromDic(lecture.get('att')) 
+    body = '''<?xml version="1.0" encoding="utf-8"?>
+    <soap12:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">
+    <soap12:Body>
+        <GetData xmlns="http://tempuri.org/">
+        <Params_CommaSeparated>{0},{1},17,{2};{3}</Params_CommaSeparated>
+        </GetData>
+    </soap12:Body>
+    </soap12:Envelope>
+    '''.format('testm','testm', lecture.get('schedule_id'), attendanceDataFormated)
+    r = requests.post(url, data=body, headers={'Content-Type': contentType})
+    if (not r.ok()):
+        return jsonify({'err': 'can not submit the attendance'}), 400
+
+    # deleting the submitted lecture
     submittedLecture = Lecture.query.filter_by(id=lecture_id).first()
     db.session.delete(submittedLecture)
     db.session.commit()
-    return jsonify({'err': 'submitAttendance not implemented yet'}), 404
+    
+    return jsonify({'msg': 'submitted'}), 200
 
 @routeJsonAndXml('/<student_id>/lectures.{}', root='lectures')
 def getStdAvailableLectures(student_id):
@@ -222,6 +262,17 @@ def getStdAvailableLectures(student_id):
             # break
     return lectures
 
+
+@routeJsonAndXml('/prof/<professor_id>/lectures.{}', root='lectures')
+def getProfLectures(professor_id):
+    profLectures = Lecture.query.filter_by(owner_id=professor_id)
+    lectures = []
+    for lecture in profLectures:
+        curr = lecture.as_dict()
+        # [TODO]: get the schedule data also and append it
+        # [TODO]: get the professor data also and append it
+        lectures.append(curr)
+    return lectures
 
 @app.route('/login')
 def login():
@@ -260,6 +311,15 @@ def filterWithChild(root, key, value):
         if (not (child.find(key).text.strip() == value)):
             root.remove(child)
     print(root.getchildren().__len__())
+
+def formatAttendanceFromDic(attendance):
+    formatedString = ''
+    for stdAtt in attendance:
+        if (not stdAtt.get('attend')):
+            formatedString += '|{}'.format(stdAtt.get('id'))
+    if (formatedString.__len__ == 0):
+        return formatedString
+    return formatedString[1:]
 
 if __name__ == "__main__":
     # use it when you want to run the api from the application
