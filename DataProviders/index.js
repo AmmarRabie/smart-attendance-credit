@@ -1,7 +1,7 @@
 // This file is responsible for interfacing and calling the app api
 // All the data the application needs to fetch, should come from funcs in this file.
 // so it called data provider
-import base64 from 'base-64'
+import base64 from '../../AppData/Local/Microsoft/TypeScript/2.9/node_modules/@types/base-64'
 import CONFIG from "../config.json";
 
 // simulation to run without calling api
@@ -74,4 +74,39 @@ export const fetchSchedules = async (type,code) => {
     }
     const { error } = response.json()
     throw new Error(error)
+}
+export const fetchStudentActiveLectures= async (studentId)=>{
+    const url=`http://${CONFIG.server_ip}/${studentId}/lectures.json`
+    const response=await fetch(url,{
+        method:'GET'
+    })
+    if(response.status==200){
+        const {lectures}=await response.json()
+        return lectures
+    }
+    const {err}=response.json()
+    throw new Error (err)
+}
+export const attendStudent=async (studentId,lectureId)=>{
+    const url=`http://${CONFIG.server_ip}/attendance/${studentId}/${lectureId}/1`
+    const respone= await fetch (url,{
+        method:'POST'
+    })
+    if (response.status==200){
+        return
+    }
+    const {err}=respone.json()
+    throw new Error(err)
+}
+export const fetchLectureInfo=async(lectureId)=>{
+    const url=`http:/${CONFIG.server_ip}/lecture.json/${lectureId}`
+    const response =await fetch(url,{
+        method:'GET'
+    })
+    if(response.status==200){
+        const {lecture}=await response.json()
+        return lecture.status
+    }
+    const {err}=respone.json()
+    throw new Error(err)
 }

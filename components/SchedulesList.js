@@ -1,4 +1,4 @@
-import React from 'react'
+import React from '../../AppData/Local/Microsoft/TypeScript/2.9/node_modules/@types/react'
 import {  View, Text, StyleSheet,  ScrollView } from 'react-native'
 import { List, ListItem } from 'react-native-elements'
 

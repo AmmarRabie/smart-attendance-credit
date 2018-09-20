@@ -8,7 +8,8 @@ import { Provider } from 'react-redux';
 
 import AuthScreen from './features/auth'
 import CoursesScreen from './features/courses_available';
-import StudentAttendanceScreen from './features/attendance_student';
+import OpenLecturesScreen from './features/open_lectures';
+import LectureAttendanceScreen from './features/lecture_attendance'
 import ProfAttendanceScreen from './features/attendance_prof';
 
 const ProfAppNavigator = createStackNavigator(
@@ -29,7 +30,8 @@ const ProfAppNavigator = createStackNavigator(
 
 const StdAppNavigator = createStackNavigator(
   {
-    StudentSession: StudentAttendanceScreen, // in future this should be something like tab navigator
+    openLectures: OpenLecturesScreen, // in future this should be something like tab navigator
+    lectureAttendance:LectureAttendanceScreen
   },
   {
     initialRouteName: 'StudentSession',
