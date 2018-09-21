@@ -75,3 +75,46 @@ export const fetchSchedules = async (type,code) => {
     const { error } = response.json()
     throw new Error(error)
 }
+
+export const fetchLectureAttendance = async (lecture_id) => {
+    const url = `http://${CONFIG.server_ip}/lecture.json/${encodeURIComponent(lecture_id)}`
+    console.log(url)
+    const response = await fetch(url, {
+        method: 'GET',
+    })
+
+    if (response.status == 200) {
+
+        // important ************
+        // this part of the code  need to be rewritten after we get the response of the api as json 
+        // also the component SchedulesList   
+        // important *************
+        const {lecture}  = await response.json()
+        return lecture
+    }
+    const { error } = response.json()
+    throw new Error(error)
+}
+
+export const postStudentAttendance = async (lecture_id, student_id, attendance) => {
+    var attendance_flag = attendance ? 1 : 0;  // url accept integer 0 or 1 
+
+    const url = `http://${CONFIG.server_ip}/attendance/${encodeURIComponent(student_id)}/${encodeURIComponent(lecture_id)}/${encodeURIComponent(attendance_flag)}`
+    console.log(url)
+    const response = await fetch(url, {
+        method: 'GET',
+    })
+
+    if (response.status == 200) {
+
+        // important ************
+        // this part of the code  need to be rewritten after we get the response of the api as json 
+        // also the component SchedulesList   
+        // important *************
+        const obj = await response.json()
+
+        return obj// [TODO]: force it to be list even it is one item
+    }
+    const { error } = response.json()
+    throw new Error(error)
+}
