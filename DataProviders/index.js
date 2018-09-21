@@ -89,8 +89,8 @@ export const fetchLectureAttendance = async (lecture_id) => {
         // this part of the code  need to be rewritten after we get the response of the api as json 
         // also the component SchedulesList   
         // important *************
-        const obj  = await response.json()
-        return obj.lecture.att// [TODO]: force it to be list even it is one item
+        const {lecture}  = await response.json()
+        return lecture
     }
     const { error } = response.json()
     throw new Error(error)

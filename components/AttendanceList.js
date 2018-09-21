@@ -7,7 +7,8 @@ class AttendanceList extends React.Component {
     constructor(props) {
         super(props)
         this.state={
-            attendanceList:this.props.list
+            attendanceList:this.props.list,
+            count: 0
         }
     }
     static defaultProps = {
@@ -19,6 +20,12 @@ class AttendanceList extends React.Component {
          list[index].attend = !list[index].attend
          this.props.onAttendanceChange(this.props.lecture_id, student_id, list[index].attend);
          this.setState({ attendanceList: list });
+
+         // update the new count
+         let newCount  = this.state.count
+         list[index].attend ? newCount++ : newCount--
+         this.setState({count: newCount})
+         this.props.onCountChange(newCount)
     }
 
      checkedIcon =()=>
@@ -33,10 +40,20 @@ class AttendanceList extends React.Component {
             <Image source={require('../images/unchecked.jpg')} />
         )
     }
-    render() {
 
-        //console.log(this.state.attendanceList)
-        
+    componentDidMount(){
+        let count = 0
+        this.props.list.map((item) => {
+            if(item.attend)
+                count++;
+
+        })
+        console.log(`the count after mounting is = ${count}`)
+        this.setState({count})
+        this.props.onCountChange(count)
+    }
+
+    render() {
         return (
             <ScrollView marginTop={this.props.marginTop} >
                 <List containerStyle={styles.ListContainer} >
@@ -54,7 +71,8 @@ class AttendanceList extends React.Component {
                                     />
                                 }
                             />*/
-                            <CustomAttendanceItem 
+                            <CustomAttendanceItem
+                            key={index}
                             name={l.name}
                             index={index}
                             attend={l.attend}

@@ -2,12 +2,15 @@ import {
     GET_LECTURE_ATTENDANCE_BEGIN,
     GET_LECTURE_ATTENDANCE_SUCCESS,
     GET_LECTURE_ATTENDANCE_FAILURE,
+    CHANGE_LECTURE_ATTENDANCE_SUCCESS,
+    CHANGE_LECTURE_ATTENDANCE_FAILURE,
 } from './actions';
 
 const getLectureAttendanceInitialState = {
-    attendanceList: [],
+    lecture: [],
     loading: true,
-    error: null
+    error: null,
+    ok: false,
 };
 
 
@@ -23,14 +26,26 @@ const LectureAttendanceReducer = (state = getLectureAttendanceInitialState, acti
             return {
                 ...state,
                 loading: false,
-                attendanceList: action.payload
+                lecture: action.payload
             };
         case GET_LECTURE_ATTENDANCE_FAILURE:
             return {
                 ...state,
                 loading: false,
                 error: action.payload,
-                attendanceList: []
+                lecture: []
+            };
+        case CHANGE_LECTURE_ATTENDANCE_SUCCESS:
+            return {
+                ...state,
+                lecture: {...state.lecture, status: action.payload},
+                ok: true,
+            };
+        case CHANGE_LECTURE_ATTENDANCE_FAILURE:
+            return {
+                ...state,
+                ok: false,
+                change_lecture_error: action.payload
             };
         default:
             // ALWAYS have a default case in a reducer
@@ -39,6 +54,3 @@ const LectureAttendanceReducer = (state = getLectureAttendanceInitialState, acti
 }
 
 export default LectureAttendanceReducer
-
-
-
