@@ -21,7 +21,7 @@ export default class OpenLecturesList extends React.Component{
                         <ListItem
                             title={l.scheduleName}
                             key={l.sessionId}
-                            onPress={this.props.onItemClick(l.sessionId)}
+                           onPress={this.props.onItemClick(l.sessionId)}
 
                             
                             subtitle={

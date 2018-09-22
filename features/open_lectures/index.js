@@ -1,7 +1,7 @@
 import React from 'react'
-import { View, Text, StyleSheet } from 'react-native'
+import {Image, ActivityIndicator, View, Text, StyleSheet } from 'react-native'
 import { connect } from 'react-redux'
-import { GetOpenLectures } from './Actions'
+import { GetOpenLectures ,makeStudentAttend} from './Actions'
 import OpenLecturesList from '../../components/openLecturesList'
 
 
@@ -11,18 +11,24 @@ class OpenLecturesScreen extends React.Component {
     }
 
     componentWillMount() {
-        this._getLectures('1170406')
-    }
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.studentOpenLectures && nextProps.studentOpenLectures.length === 1)
-            this.props.navigation.navigate('lectureAttendance', { Lecture: nextProps.studentOpenLectures[0].id, stdId: '1170406' })
-    }
 
+        this._getLectures('1170406')
+
+    }
+   componentWillReceiveProps(nextProps) {
+   
+    if (nextProps.studentOpenLectures && nextProps.studentOpenLectures.length === 1)
+   {  console.log('receive props')
+                this.props.navigation.navigate('lectureAttendance', { Lecture: nextProps.studentOpenLectures[0].id, stdId: '11170406' })
+
+   }    
+}
     _getLectures = (studentId) => {
-        Lectures = this.props.GetOpenLectures(studentId)
+         this.props.GetOpenLectures(studentId)
     }
     navigateFunction(id) {
-        this.state.navigation.navigate(lectureAttendance, { Lecture: id, stdId: this.props.navigation.getParams('stdId') })
+        console.log('navigate')
+        this.props.navigation.navigate('lectureAttendance', { Lecture: id, stdId: '1170406' })
     }
     openLecturesRender(openLectures, Loading) {
         if (Loading) {
@@ -41,7 +47,7 @@ class OpenLecturesScreen extends React.Component {
         }
         else {
             return (
-                <OpenLecturesList marginTop={20} list={openLectures} onItemClick={this.navigateFunction(id)} />
+                <OpenLecturesList marginTop={20} list={openLectures } onItemClick={(id)=>this.navigateFunction(id)}  />
             )
         }
     }
