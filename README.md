@@ -45,7 +45,7 @@ pip install -r requirements.txt
 ```
 
 ## create database
-You should first make the database from sql server using windows authentication and give it a name say 'test_creditSmartAttendance'. Then open the App.py and find this line in the beginning of the file
+You should first make the database from sql server using windows authentication and give it a name say 'test_creditSmartAttendance'. Then open the app.py and find this line in the beginning of the file
 ```
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mssql+pyodbc://AMMAR\SQLEXPRESS/test_creditSmartAttendance?driver=ODBC+Driver+11+for+SQL+Server'
 ```
@@ -62,4 +62,4 @@ if no error you should see two tables and dummy values in it from sql server (re
 To run the api, you want to run it from a virtual environment having all dependencies as we did above.
 * activate the venv.
 * point to the root dir.
-* run the App.py using 'python App.py' command.
+* run the __init__.py using 'python __init__.py' command.
