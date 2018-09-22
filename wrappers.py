@@ -37,6 +37,18 @@ def userRequired(role='any'):
         @user_token_available(role)
         def decorated(auth, *args, **kwargs):
             if(auth['error']):
+                return  'err', {'cause': auth['error']}, 404
+            return fn(auth['user'], *args, **kwargs)
+        decorated.__name__ = "{}_{}".format(decorated.__name__, fn.__name__)
+        return decorated
+    #decorator.__name__ = '{}_{}'.format(decorator.__name__, random.randint(1,10000))
+    return decorator
+
+def userRequiredJson(role='any'):
+    def decorator(fn): # (f, auth)
+        @user_token_available(role)
+        def decorated(auth, *args, **kwargs):
+            if(auth['error']):
                 return jsonify({'msg': auth['error']}), 404
             return fn(auth['user'], *args, **kwargs)
         decorated.__name__ = "{}_{}".format(decorated.__name__, fn.__name__)

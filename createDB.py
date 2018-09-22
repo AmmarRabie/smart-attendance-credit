@@ -1,6 +1,6 @@
-from App import db
-from App import StdAttendance
-from App import Lecture
+from app import db
+from models import StdAttendance
+from models import Lecture
 
 # try:
 	# db.create_all()
@@ -35,4 +35,3 @@ db.session.add(l2)
 db.session.add(l3)
 db.session.add(l4)
 db.session.commit()
-

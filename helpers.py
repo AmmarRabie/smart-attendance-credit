@@ -1,3 +1,5 @@
+import xml.etree.ElementTree as ET
+from ast import literal_eval as jsonToDic
 def filterCode(root, codeValue):
     if (codeValue is None or codeValue.strip() == ''): return
     for child in root.findall('Schedule'):
@@ -29,4 +31,10 @@ def buildUrlWithParams(*params):
     return baseUrl.format(parameters_coma_separated[:-1])
 
 def isFacultyUser(xmlText):
-    return True
+    root = ET.fromstring(xmlText)
+    result = jsonToDic(root.text)
+    auth = result.get('Authentication')
+    if (auth.get('Status') == 'Authenticated'):
+        return True
+    print('Not a user because: {}'.format(auth.get('Error_Msg')))
+    return False

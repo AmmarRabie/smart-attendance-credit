@@ -135,7 +135,7 @@ def insertLecture(schedule_id):
     newL = Lecture(schedule_id=schedule_id, attendanceStatusOpen=False)
     db.session.add(newL)
     db.session.commit()
-    return jsonify({'id': newL.id}), 202
+    return jsonify({'id': newL.id}), 200
 
 
 @app.route('/changeStatus/<lecture_id>/<status>', methods=['post'])
@@ -276,12 +276,12 @@ def login():
     userId = auth.username
     password = auth.password
 
-    # try:
-    #     r = requests.get(buildUrlWithParams(userId, password, 0,0))
-    # except requests.exceptions.ConnectionError as error:
-    #     return 'exception', {'msg': 'server is down now, try again later', 'detail': str(error)}, 200
-    # if(not isFacultyUser(r.text)):
-    #     return jsonify({'err': 'incorrect id or password '}), 400
+    try:
+        r = requests.get(buildUrlWithParams(userId, password, 0,0))
+    except requests.exceptions.ConnectionError as error:
+        return 'exception', {'msg': 'server is down now, try again later', 'detail': str(error)}, 200
+    if(not isFacultyUser(r.text)):
+        return jsonify({'err': 'incorrect id or password '}), 400
 
     role = ('std', 'prof')[not userId.isdigit()]
     token = jwtEncode({
