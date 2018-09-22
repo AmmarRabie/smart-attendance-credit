@@ -1,4 +1,4 @@
-import {attendStudent,fetchLectureInfo} from '../../DataProviders'
+import {attendStudent,fetchLectureInfo} from './provider'
 
 //Actions
 

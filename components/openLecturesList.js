@@ -1,8 +1,8 @@
-import React from '../../AppData/Local/Microsoft/TypeScript/2.9/node_modules/@types/react'
+import React from 'react'
 import {  View, Text, StyleSheet,  ScrollView } from 'react-native'
 import { List, ListItem } from 'react-native-elements'
 
-export default class openLecturesList extends React.Component{
+export default class OpenLecturesList extends React.Component{
     constructor(props)
     {
         super(props)

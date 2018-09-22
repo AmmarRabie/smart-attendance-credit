@@ -1,4 +1,4 @@
-import {fetchStudentActiveLectures} from '../../DataProviders'
+import {fetchStudentActiveLectures} from './provider'
 
 //Actions 
 export const GET_OPEN_LECTURES_SENT ='GET_OPEN_LECTURES_SENT'
@@ -23,7 +23,7 @@ export const GetOpenLecturesFailure=(error)=>({
     payload:error
 })
 
-export const GetOpenLectures=(studenId)=>async dispatch=>{
+export const GetOpenLectures=(studentId)=>async dispatch=>{
     dispatch(getOpenLecturesSent())
     try{
         const Lectures=await fetchStudentActiveLectures(studentId)

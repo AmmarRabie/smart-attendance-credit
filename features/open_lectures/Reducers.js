@@ -2,7 +2,7 @@ import {
     GET_OPEN_LECTURES_SENT,
     GET_OPEN_LECTURES_SUCCESS,
     GET_OPEN_LECTURES_FAILURE
-} from './attendance_studentActions'
+} from './Actions'
 
 openLecturesInitialState={
     Lectures:[],

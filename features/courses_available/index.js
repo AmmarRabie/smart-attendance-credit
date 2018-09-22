@@ -1,8 +1,8 @@
-import React from '../../../AppData/Local/Microsoft/TypeScript/2.9/node_modules/@types/react'
+import React from 'react'
 import { Image, ActivityIndicator, View, Text, StyleSheet, Alert, Picker } from 'react-native'
 import { Icon, Card, Button } from 'react-native-elements'
 
-import { connect } from '../../../AppData/Local/Microsoft/TypeScript/2.9/node_modules/@types/react-redux'
+import { connect } from 'react-redux'
 import { GetCodes, GetWantedSchedules } from './actinos'
 import SchedulesList from '../../components/SchedulesList'
 

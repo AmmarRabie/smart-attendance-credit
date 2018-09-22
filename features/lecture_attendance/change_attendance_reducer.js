@@ -2,7 +2,7 @@ import{
     ATTEND_STUDENT_SENT,
     ATTEND_STUDENT_SUCCESS,
     ATTEND_STUDENT_FAILURE,
-}from'./attendance_studentActions'
+} from'./actions'
 
 const studentAttendanceInitialState={
     studnetIsAttend:false,

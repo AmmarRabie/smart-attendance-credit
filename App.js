@@ -34,7 +34,7 @@ const StdAppNavigator = createStackNavigator(
     lectureAttendance:LectureAttendanceScreen
   },
   {
-    initialRouteName: 'StudentSession',
+    initialRouteName: 'openLectures',
     navigationOptions: {
       headerTintColor: '#a41034',
       headerStyle: {
@@ -53,7 +53,7 @@ const AppNavigator = createSwitchNavigator(
     Courses: CoursesScreen
   },
   {
-    initialRouteName: 'Courses',
+    initialRouteName: 'StdApp',
   }
 );
 

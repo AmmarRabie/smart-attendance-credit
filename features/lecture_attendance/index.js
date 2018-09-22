@@ -1,84 +1,83 @@
-import {makeStudentAttend,checkAttendanceStatus }from './actions'
-import React from '../../../AppData/Local/Microsoft/TypeScript/2.9/node_modules/@types/react'
-import { AppRegistry,View, Text ,StyleSheet,Button} from 'react-native'
-import { connect } from '../../../AppData/Local/Microsoft/TypeScript/2.9/node_modules/@types/react-redux'
+import { makeStudentAttend, checkAttendanceStatus } from './actions'
+import React from 'react'
+import { AppRegistry, View, Text, StyleSheet, Button } from 'react-native'
+import { connect } from 'react-redux'
 
-export default class LectureAttendanceScreen extends React.Component{
-    constructor(){
-        super()
-       /* this.state={
-            isAttend:false,
-            attendanceStatus:false //True means open ,false means closed
-            }*/
-    }
-   componentWillMount(){
-       attendanceStatus=this.props.checkAttendanceStatus(this.props.navigation.getParams('Lecture'))
-   }
-    checkStatus=()=>
-    {
-        this.setState({attendanceStatus:this.props.checkAttendanceStatus(this.props.navigation.getParams('Lecture'))})
+class LectureAttendanceScreen extends React.Component {
+    state = {
+
     }
 
-    takeStudentAttendance(){
-        this.props.makeStudentAttend(this.props.navigation.getParams('stdId'),this.props.navigation.getParams('Lecture'))
+    componentWillMount() {
+        attendanceStatus = this.props.checkAttendanceStatus(this.props.navigation.getParams('Lecture'))
     }
-    render(){
-        const studnetIsAttend=this.props.studnetIsAttend
-        const studentAttendError=this.props.studentAttendError
-        const studentAttendLoading=this.props.studentAttendLoading
-        const statusIsOpen=this.props.statusIsOpen
-        const statusError=this.props.statusError
-        const statusLoading=this.props.statusLoading
+    checkStatus = () => {
+        this.setState({ attendanceStatus: this.props.checkAttendanceStatus(this.props.navigation.getParams('Lecture')) })
+    }
+
+    takeStudentAttendance() {
+        this.props.makeStudentAttend(this.props.navigation.getParams('stdId'), this.props.navigation.getParams('Lecture'))
+    }
+    render() {
+        const studnetIsAttend = this.props.studnetIsAttend
+        const studentAttendError = this.props.studentAttendError
+        const studentAttendLoading = this.props.studentAttendLoading
+        const statusIsOpen = this.props.statusIsOpen
+        const statusError = this.props.statusError
+        const statusLoading = this.props.statusLoading
 
 
-        if(studentAttendError||statusError){
-            return(
+        if (studentAttendError || statusError) {
+            return (
                 <Image style={styles.Image} source={require('../../images/error_state.jpg')}>
                 </Image>
             )
         }
-        if(studentAttendLoading||statusLoading){
-            return(
+        if (studentAttendLoading || statusLoading) {
+            return (
                 <View style={styles.LoadingContainer}>
-                <Text style={styles.headline}>  Loading... </Text>
-                <ActivityIndicator size="large" color="#0000ff" />
-            </View>
+                    <Text style={styles.headline}>  Loading... </Text>
+                    <ActivityIndicator size="large" color="#0000ff" />
+                </View>
             )
         }
-        return(
-        <View style={styles.MainContainer}>
-            <View style={styles.HorizontalContainer} >
-            
-            <Text>Attendance Status: </Text>
-            <Text> {statusIsOpen}</Text>
-            <Button 
-            title="Check attendance!"
-            onPress={()=>this.checkStatus()} />
+        return (
+            <View style={styles.MainContainer}>
+                <View style={styles.HorizontalContainer} >
+
+                    <Text>Attendance Status: </Text>
+                    <Text> {statusIsOpen}</Text>
+                    <Button
+                        title="Check attendance!"
+                        onPress={() => this.checkStatus()} />
+                </View>
+                <View style={styles.HorizontalContainer}>
+                    <Text> Attendance: {studnetIsAttend}</Text>
+                    <Button title='Take My Attendance' onPress={() => makeStudentAttend()}></Button>
+
+                </View>
             </View>
-            <View style={styles.HorizontalContainer}>
-            <Text> Attendance: {studnetIsAttend}</Text>
-            <Button title='Take My Attendance' onPress={()=>makeStudentAttend()}></Button>
-            
-            </View>
-        </View>
         )
     }
 
 }
 
 
-const mapStateToProps=state=>({
-    studnetIsAttend:state.studentAttendance.isAttend,
-    studentAttendError:state.studentAttendance.error,
-    studentAttendLoading:state.studentAttendance.loading,
-    statusIsOpen:state.studentAttendance.attendanceStatusOpen,
-    statusError:state.studentAttendance.error,
-    statusLoading:state.studentAttendance.loading
+const mapStateToProps = state => ({
+    studnetIsAttend: state.studentAttendance.isAttend,
+    studentAttendError: state.studentAttendance.error,
+    studentAttendLoading: state.studentAttendance.loading,
+    statusIsOpen: state.studentAttendance.attendanceStatusOpen,
+    statusError: state.studentAttendance.error,
+    statusLoading: state.studentAttendance.loading
 })
-const mapDispatchToProps={
+const mapDispatchToProps = {
     makeStudentAttend,
     checkAttendanceStatus
 }
+
+export default connect(mapStateToProps, mapDispatchToProps)(LectureAttendanceScreen)
+
 const styles = StyleSheet.create({
     MainContainer:
     {
@@ -88,9 +87,9 @@ const styles = StyleSheet.create({
         backgroundColor: '#EEEEEE',
     }
     ,
-    HorizontalContainer:{
-        flex:1,
-        flexDirection:'row'
+    HorizontalContainer: {
+        flex: 1,
+        flexDirection: 'row'
     },
     LoadingContainer: {
         flex: 1,

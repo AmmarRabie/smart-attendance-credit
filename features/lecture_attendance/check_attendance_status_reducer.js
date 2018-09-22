@@ -2,7 +2,7 @@ import{
     CHECK_ATTENDANCE_STATUS_SENT,
     CHECK_ATTENDANCE_STATUS_SUCCESS,
     CHECK_ATTENDANCE_STATUS_FAILURE
-}from './attendance_studentActions'
+}from './actions'
 
 const attendanceStateInitialState={
     statusIsOpen:false,
