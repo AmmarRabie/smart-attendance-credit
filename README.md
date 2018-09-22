@@ -62,4 +62,4 @@ if no error you should see two tables and dummy values in it from sql server (re
 To run the api, you want to run it from a virtual environment having all dependencies as we did above.
 * activate the venv.
 * point to the root dir.
-* run the __init__.py using 'python __init__.py' command.
+* run the \_\_init\_\_.py using 'python \_\_init\_\_.py' command.
