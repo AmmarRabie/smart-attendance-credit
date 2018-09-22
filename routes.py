@@ -7,12 +7,12 @@ from flask import jsonify, request
 from jwt import encode as jwtEncode
 from xmltodict import parse as xmltodic  # , unparse as xmlify2
 
-from .app import app, db
-from .config import app_secret_key
-from .helpers import (buildUrlWithParams, filterCode, filterWithChild,
+from app import app, db
+from config import app_secret_key
+from helpers import (buildUrlWithParams, filterCode, filterWithChild,
                       formatAttendanceFromDic, isFacultyUser)
-from .models import Lecture, StdAttendance
-from .wrappers import user_token_available, userRequired
+from models import Lecture, StdAttendance
+from wrappers import user_token_available, userRequired
 
 
 def routeJsonAndXml(url, root='root'):
