@@ -117,4 +117,25 @@ export const postStudentAttendance = async (lecture_id, student_id, attendance) 
     }
     const { error } = response.json()
     throw new Error(error)
+
+}
+
+export const openlecture = async (scheduleId) => {
+
+    const url = `http://${CONFIG.server_ip}/lecture/new/${encodeURIComponent(scheduleId)}`
+    const response = await fetch(url, {
+        method: 'post',
+    })
+
+    if (response.status == 200) {
+
+        // important ************
+        // important *************
+        const obj = await response.json()
+
+        return obj.id// [TODO]: force it to be list even it is one item
+    }
+    const { error } = response.json()
+
+    throw new Error(error)
 }

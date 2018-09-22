@@ -1,6 +1,6 @@
 // *********  All Action of CoursesScreen (get codes of the courses and get specific schedules)
 
-import { fetchCodes,fetchSchedules } from '../../DataProviders'
+import { fetchCodes, fetchSchedules, openlecture } from '../../DataProviders'
 
 
 
@@ -8,10 +8,14 @@ import { fetchCodes,fetchSchedules } from '../../DataProviders'
 export const GET_CODES_BEGIN = 'GET_CODES_BEGIN'
 export const GET_CODES_SUCCESS = 'GET_CODES_SUCCESS'
 export const GET_CODES_FAILURE = 'GET_CODES_FAILURE'
+
 export const GET_WANTED_SCHEDULES_BEGIN   = 'GET_WANTED_SCHEDULES_BEGIN'
 export const GET_WANTED_SCHEDULES_SUCCESS = 'GET_WANTED_SCHEDULES_SUCCESS'
 export const GET_WANTED_SCHEDULES_FAILURE = 'GET_WANTED_SCHEDULES_FAILURE'
 
+export const OPEN_NEW_LECTURE_BEGIN     = 'OPEN_NEW_LECTURE_BEGIN'
+export const OPEN_NEW_LECTURE_SUCCESS   = 'OPEN_NEW_LECTURE_SUCCESS'
+export const OPEN_NEW_LECTURE_FAILURE   = 'OPEN_NEW_LECTURE_FAILURE'
 
 //////////////// get codes of departments of the university
 
@@ -70,3 +74,29 @@ export const GetWantedSchedules = (type,code) => async dispatch => {
 ///////////////////////////////////////////////////////////////////////////////////////////
 
 
+//////////////// open new lecture
+
+
+export const openNewLectureBegin = () => ({
+    type: OPEN_NEW_LECTURE_BEGIN
+});
+
+export const openNewLectureSuccess = (lectureId) => ({
+    type: OPEN_NEW_LECTURE_SUCCESS, payload: lectureId
+});
+
+export const openNewLectureFailure = (error) => ({
+    type: OPEN_NEW_LECTURE_FAILURE, payload: error
+});
+
+
+export const openNewLecture = (scheduleId) => async dispatch => {
+    dispatch(openNewLectureBegin())
+    try {
+        const LectureId = await openlecture(scheduleId);
+        dispatch(openNewLectureSuccess(LectureId))
+
+    } catch (error) {
+        dispatch(openNewLectureFailure(error))
+    }
+}

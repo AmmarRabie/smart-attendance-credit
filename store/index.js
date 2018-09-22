@@ -5,10 +5,11 @@ import SchedulesReducer from '../features/courses_available/schedules_reducer';
 import LectureAttendanceReducer from '../features/attendance_prof/attListreducer';
 import chngStudentAttendanceReducer from '../features/attendance_prof/chngStdAttReducer';
 import AttendanceStatusReducer from '../features/attendance_prof/reducer_attendanceStatus';
+import openNewLecture from '../features/courses_available/newLecture_reducer';
+import submitAttendanceReducer from '../features/attendance_prof/reducer_submitAttendance';
 
 
 import thunk from 'redux-thunk';
-import submitAttendanceReducer from '../features/attendance_prof/reducer';
 
 export const reducers = combineReducers({
     auth: authReducer,
@@ -19,7 +20,8 @@ export const reducers = combineReducers({
        chngStuAtt: chngStudentAttendanceReducer,
        attendanceStatus: AttendanceStatusReducer,
        submitAttendance: submitAttendanceReducer,
-    })
+    }),
+    openNewLec: openNewLecture
 })
 
 export default store = createStore(reducers, applyMiddleware(thunk));

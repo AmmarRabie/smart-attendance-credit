@@ -3,7 +3,7 @@ import { Image, ActivityIndicator, View, Text, StyleSheet, Alert, Picker } from 
 import { Icon, Card, Button } from 'react-native-elements'
 
 import { connect } from 'react-redux'
-import { GetCodes, GetWantedSchedules } from './actinos'
+import { GetCodes, GetWantedSchedules, openNewLecture } from './actinos'
 import SchedulesList from '../../components/SchedulesList'
 
 
@@ -65,6 +65,9 @@ class CoursesScreen extends React.Component {
     _getcodes = () => {
         this.props.GetCodes()
     }
+    _openNewLecture = (scheduleID) => {
+        this.props.openNewLecture(scheduleID)
+    }
 
     _getSchedules = (code = undefined, type = undefined) => {
         const _type = type || this.state.tutorial_type_holder
@@ -98,7 +101,7 @@ class CoursesScreen extends React.Component {
         }
         else {
             return (
-                <SchedulesList marginTop={20} list={this.props.schedules} />
+                <SchedulesList marginTop={20} list={this.props.schedules} onSchedulePress={this._openNewLecture} />
             )
         }
     }
@@ -114,10 +117,25 @@ class CoursesScreen extends React.Component {
         const schedules_loading = this.props.schedules_loading;
         const schedules_error = this.props.schedules_error;
 
-        console.log("schedules = ", schedules, "loading =", schedules_loading, " error =", schedules_error)
-        console.log("codes = ", codes, "loading =", codes_loading, "error =", codes_error)
+        const lecture_id = this.props.lecture_id
+        const new_lecture_loading = this.props.new_lecture_loading
+        const new_lecture_error = this.props.new_lecture_error
 
+        //console.log("schedules = ", schedules, "loading =", schedules_loading, " error =", schedules_error)
+        //console.log("codes = ", codes, "loading =", codes_loading, "error =", codes_error)
+        //console.log("lecture_id = ", lecture_id, "new_lecture_loading =", new_lecture_loading, "new_lecture_error =", new_lecture_error)
+        //console.log(lecture_id && !new_lecture_loading && !new_lecture_error)
 
+        if (lecture_id&&!new_lecture_loading&&!new_lecture_error)  // if new lectue are opened go to its screen 
+        {
+            this.props.navigation.navigate('ProfSession',{lecture_id:lecture_id})
+        }
+
+        if (new_lecture_error)
+        {
+            Alert.alert('Error !!!', "there is something went wrong during the creation of the lecture", [
+                { text: 'Ok' }])
+        }
         if (codes_error || schedules_error) {
             console.log(`codes_error=${codes_error}, schedules_error=${schedules_error}`)
             return (
@@ -125,7 +143,7 @@ class CoursesScreen extends React.Component {
                 </Image>
             )
         }
-        if (codes_loading) {
+        if (codes_loading || new_lecture_loading) {
             return (
                 <View style={styles.LoadingContainer}>
                     <Text style={styles.headline}>  Loading... </Text>
@@ -171,14 +189,20 @@ const mapStateToProps = state => ({
     codes: state.codes.codes,
     codes_loading: state.codes.loading,
     codes_error: state.codes.error,
+
     schedules: state.schedules.schedules.map(schedule => ({ ...schedule, key: schedule.scheduleID })),
     schedules_loading: state.schedules.loading,
     schedules_error: state.schedules.error,
+
+    lecture_id: state.openNewLec.lectureId,
+    new_lecture_loading: state.openNewLec.loading,
+    new_lecture_error: state.openNewLec.error
 })
 
 const mapDispatchToProps = {
     GetCodes,
     GetWantedSchedules,
+    openNewLecture
 }
 export default connect(mapStateToProps, mapDispatchToProps)(CoursesScreen)
 //////////////////////////////////////////////////////////////////////////////////////////////
