@@ -1,0 +1,1 @@
+app_secret_key = '__TheSecretKey__'
