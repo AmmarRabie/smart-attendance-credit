@@ -7,7 +7,7 @@ import{
 const attendanceStateInitialState={
     statusIsOpen:false,
     statusError:null,
-        loading:true
+    loading:true
 }
 const merge = (prev, next) => Object.assign({}, prev, next)
 
@@ -30,6 +30,8 @@ const checkAttendanceStatusReducer=(state=attendanceStateInitialState,action)=>{
             statusLoading:false,
             statusError:action.payload
         }
+        default:
+        return state
     }
 }
 export default checkAttendanceStatusReducer

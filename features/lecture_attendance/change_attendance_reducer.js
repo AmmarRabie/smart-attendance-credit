@@ -5,7 +5,7 @@ import{
 } from'./actions'
 
 const studentAttendanceInitialState={
-    studnetIsAttend:false,
+    isAttend:false,
     studentAttendError:null,
     studentAttendLoading:true
 }

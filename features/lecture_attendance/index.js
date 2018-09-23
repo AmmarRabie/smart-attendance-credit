@@ -1,6 +1,6 @@
 import { makeStudentAttend, checkAttendanceStatus } from './actions'
 import React from 'react'
-import { AppRegistry, View, Text, StyleSheet, Button } from 'react-native'
+import {  View, Text, StyleSheet, Button,ActivityIndicator } from 'react-native'
 import { connect } from 'react-redux'
 
 class LectureAttendanceScreen extends React.Component {
@@ -9,14 +9,15 @@ class LectureAttendanceScreen extends React.Component {
     }
 
     componentWillMount() {
-        attendanceStatus = this.props.checkAttendanceStatus(this.props.navigation.getParams('Lecture'))
+         this.props.checkAttendanceStatus(this.props.navigation.getParam('Lecture'))
     }
     checkStatus = () => {
-        this.setState({ attendanceStatus: this.props.checkAttendanceStatus(this.props.navigation.getParams('Lecture')) })
+        this.setState({ attendanceStatus: this.props.checkAttendanceStatus(this.props.navigation.getParam('Lecture')) })
     }
 
     takeStudentAttendance() {
-        this.props.makeStudentAttend(this.props.navigation.getParams('stdId'), this.props.navigation.getParams('Lecture'))
+        this.props.makeStudentAttend(this.props.navigation.getParam('stdId'), this.props.navigation.getParam('Lecture'))
+        console.log(`takeStudentAttendance ${this.props.studnetIsAttend}`)
     }
     render() {
         const studnetIsAttend = this.props.studnetIsAttend
@@ -25,7 +26,8 @@ class LectureAttendanceScreen extends React.Component {
         const statusIsOpen = this.props.statusIsOpen
         const statusError = this.props.statusError
         const statusLoading = this.props.statusLoading
-
+        console.log(statusIsOpen)
+        console.log(studnetIsAttend)
 
         if (studentAttendError || statusError) {
             return (
@@ -51,25 +53,32 @@ class LectureAttendanceScreen extends React.Component {
                         title="Check attendance!"
                         onPress={() => this.checkStatus()} />
                 </View>
-                <View style={styles.HorizontalContainer}>
-                    <Text> Attendance: {studnetIsAttend}</Text>
-                    <Button title='Take My Attendance' onPress={() => makeStudentAttend()}></Button>
 
-                </View>
+                {this.renderTakeAttendanceBtn(statusIsOpen && !studnetIsAttend)}
             </View>
         )
     }
 
+    renderTakeAttendanceBtn(draw){
+        if (!draw) return null
+        return (
+            <View  style={styles.HorizontalContainer}>
+            <Text> Attendance: {this.props.isAttend}</Text>
+            <Button title='Take My Attendance' onPress={() => this.takeStudentAttendance()}></Button>
+
+        </View>
+        )
+    }
 }
 
 
 const mapStateToProps = state => ({
     studnetIsAttend: state.studentAttendance.isAttend,
-    studentAttendError: state.studentAttendance.error,
-    studentAttendLoading: state.studentAttendance.loading,
-    statusIsOpen: state.studentAttendance.attendanceStatusOpen,
-    statusError: state.studentAttendance.error,
-    statusLoading: state.studentAttendance.loading
+    studentAttendError: state.studentAttendance.studentAttendError,
+    studentAttendLoading: state.studentAttendance.studentAttendLoading,
+    statusIsOpen: state.checkAttendacneStatus.attendanceStatusOpen,
+    statusError: state.checkAttendacneStatus.statusError,
+    statusLoading: state.checkAttendacneStatus.statusLoading
 })
 const mapDispatchToProps = {
     makeStudentAttend,

@@ -27,9 +27,10 @@ export const makeStudentAttend=(studentId,LectureId)=> async dispatch=>{
     dispatch(attendStudentSent())
     try{
         await attendStudent(studentId,LectureId)
-        dispatch(attendStudentSuccess)
+        dispatch(attendStudentSuccess())
     }
     catch(error){
+        console.log(`erorr in make student attend: ${error}`)
         dispatch(attendStudentFailure(error))
     }
 }
@@ -51,7 +52,7 @@ export const checkAttendanceStatusFailure=(error)=>({
 export const checkAttendanceStatus=(LectureId)=> async dispatch=>{
     dispatch(checkAttendanceStatusSent())
     try{
-        LectureStatus= await fetchLectureInfo(LectureId)
+        LectureStatus = await fetchLectureInfo(LectureId)
         dispatch(checkAttendanceStatusSuccess(LectureStatus))
     }
     catch(error){

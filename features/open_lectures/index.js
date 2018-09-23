@@ -15,22 +15,23 @@ class OpenLecturesScreen extends React.Component {
         this._getLectures('1170406')
 
     }
-   componentWillReceiveProps(nextProps) {
-   
-    if (nextProps.studentOpenLectures && nextProps.studentOpenLectures.length === 1)
-   {  console.log('receive props')
-                this.props.navigation.navigate('lectureAttendance', { Lecture: nextProps.studentOpenLectures[0].id, stdId: '11170406' })
+    componentWillReceiveProps(nextProps) {
+    //   console.log(nextProps.studentOpenLectures.lecture.id)  
+        if (nextProps.studentOpenLectures && nextProps.studentOpenLectures.length === 1)
+    {  console.log('receive props')
+                    this.props.navigation.navigate('lectureAttendance', { Lecture: nextProps.studentOpenLectures[0].id, stdId: '11170406' })
 
-   }    
+    }    
 }
     _getLectures = (studentId) => {
          this.props.GetOpenLectures(studentId)
     }
     navigateFunction(id) {
-        console.log('navigate')
+        console.log(id)
         this.props.navigation.navigate('lectureAttendance', { Lecture: id, stdId: '1170406' })
     }
     openLecturesRender(openLectures, Loading) {
+    
         if (Loading) {
             return (
                 <View style={styles.LoadingContainer}>
