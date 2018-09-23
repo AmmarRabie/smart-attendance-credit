@@ -248,7 +248,7 @@ def getStdAvailableLectures(student_id):
         for student in root.findall('Student'):
             if (student.find('StdCode').text != student_id):
                 continue
-            lectures.append({'Lecture': lecture.as_dict()})
+            lectures.append( lecture.as_dict())
             # uncomment break if you want only first lecture
             # break
     return lectures
