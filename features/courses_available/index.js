@@ -168,7 +168,7 @@ class CoursesScreen extends React.Component {
                         {this.loadTutorialsTypes()}
                     </Picker>
 
-                    <Button
+                    <Button style={styles.button}
                         title='BUTTON WITH ICON COMPONENT'
                         onPress={() => this._getSchedules()}
                     />
@@ -248,5 +248,13 @@ const styles = StyleSheet.create({
         width: null,
         height: null,
         resizeMode: 'stretch',
+    },
+     button:{
+         paddingTop: 20,
+         paddingBottom: 20,
+         textAlign: 'center',
+         borderRadius: 10,
+         borderWidth: 1,
+         borderColor: '#fff'
     }
 });
