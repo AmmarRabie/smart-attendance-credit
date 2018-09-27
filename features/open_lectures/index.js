@@ -3,6 +3,7 @@ import {Image, ActivityIndicator, View, Text, StyleSheet } from 'react-native'
 import { connect } from 'react-redux'
 import { GetOpenLectures ,makeStudentAttend} from './Actions'
 import OpenLecturesList from '../../components/openLecturesList'
+import OfflineNotice from '../../components/offlineComponent'
 
 
 class OpenLecturesScreen extends React.Component {
@@ -23,7 +24,7 @@ class OpenLecturesScreen extends React.Component {
 
     }    
 }
-    _getLectures = (studentId) => {
+     _getLectures = (studentId) => {
          this.props.GetOpenLectures(studentId)
     }
     navigateFunction(id) {
@@ -31,7 +32,7 @@ class OpenLecturesScreen extends React.Component {
         this.props.navigation.navigate('lectureAttendance', { Lecture: id, stdId: '1170406' })
     }
     openLecturesRender(openLectures, Loading) {
-    
+    console.log(`open Lectures Renderer  ${openLectures}`)
         if (Loading) {
             return (
                 <View style={styles.LoadingContainer}>
@@ -68,6 +69,7 @@ class OpenLecturesScreen extends React.Component {
 
         return (
             <View style={styles.MainContainer}>
+                <OfflineNotice style={{ height:100}}/>
                 {this.openLecturesRender(Lectures, openLecturesLoading)}
             </View>
         )
@@ -96,6 +98,7 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         justifyContent: 'flex-start',
         backgroundColor: '#EEEEEE',
+        //alignSelf:'baseline',
     },
     PickerContainer:
     {

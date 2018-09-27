@@ -7,7 +7,7 @@ import{
 const studentAttendanceInitialState={
     isAttend:false,
     studentAttendError:null,
-    studentAttendLoading:true
+    studentAttendLoading:false
 }
 const merge = (prev, next) => Object.assign({}, prev, next)
 const changeStudentAttendanceReducer=(state=studentAttendanceInitialState,action)=> {
@@ -16,11 +16,13 @@ const changeStudentAttendanceReducer=(state=studentAttendanceInitialState,action
         return{
             ...state,
             studentAttendLoading:true,
+            studentAttendError:null
         }
         case ATTEND_STUDENT_SUCCESS:
         return{
             ...state,
             studentAttendLoading:false,
+            studentAttendError:null,
             isAttend:true
         }
         case ATTEND_STUDENT_FAILURE:

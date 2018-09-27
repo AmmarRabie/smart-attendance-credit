@@ -24,7 +24,8 @@ const getOPenLecturesReducer=(state=openLecturesInitialState,action)=>{
         return{
             ...state,
             loading:false,
-            Lectures:action.payload
+            Lectures:action.payload,
+            error:null
         }
         case GET_OPEN_LECTURES_FAILURE:
         return{

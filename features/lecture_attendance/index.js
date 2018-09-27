@@ -1,7 +1,8 @@
 import { makeStudentAttend, checkAttendanceStatus } from './actions'
 import React from 'react'
-import {  View, Text, StyleSheet, Button,ActivityIndicator } from 'react-native'
+import {  View, Text, StyleSheet, Button,ActivityIndicator, Alert } from 'react-native'
 import { connect } from 'react-redux'
+import OfflineNotice from '../../components/offlineComponent'
 
 class LectureAttendanceScreen extends React.Component {
     state = {
@@ -10,6 +11,13 @@ class LectureAttendanceScreen extends React.Component {
 
     componentWillMount() {
          this.props.checkAttendanceStatus(this.props.navigation.getParam('Lecture'))
+    }
+    componentWillReceiveProps(nextprops){
+        if(this.props.studentAttendError!==null){
+            Alert.alert('Error',this.props.studentAttendError)
+        }
+    
+
     }
     checkStatus = () => {
         this.setState({ attendanceStatus: this.props.checkAttendanceStatus(this.props.navigation.getParam('Lecture')) })
@@ -45,6 +53,7 @@ class LectureAttendanceScreen extends React.Component {
         }
         return (
             <View style={styles.MainContainer}>
+            <OfflineNotice/>
                 <View style={styles.HorizontalContainer} >
 
                     <Text>Attendance Status: </Text>
@@ -65,7 +74,6 @@ class LectureAttendanceScreen extends React.Component {
             <View  style={styles.HorizontalContainer}>
             <Text> Attendance: {this.props.isAttend}</Text>
             <Button title='Take My Attendance' onPress={() => this.takeStudentAttendance()}></Button>
-
         </View>
         )
     }
@@ -97,7 +105,7 @@ const styles = StyleSheet.create({
     }
     ,
     HorizontalContainer: {
-        flex: 1,
+        
         flexDirection: 'row'
     },
     LoadingContainer: {

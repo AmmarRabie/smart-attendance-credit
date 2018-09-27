@@ -16,12 +16,14 @@ const checkAttendanceStatusReducer=(state=attendanceStateInitialState,action)=>{
         case CHECK_ATTENDANCE_STATUS_SENT:
         return{
             ...state,
-            statusLoading:true
+            statusLoading:true,
+            statusError:null
         }
         case CHECK_ATTENDANCE_STATUS_SUCCESS:
         return{
             ...state,
             statusLoading:false,
+            statusError:null,
             attendanceStatusOpen:action.payload
         } 
         case CHECK_ATTENDANCE_STATUS_FAILURE:
