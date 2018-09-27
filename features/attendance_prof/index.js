@@ -1,9 +1,10 @@
 import React from 'react'
-import { Image, ActivityIndicator, View, Text, StyleSheet, Alert } from 'react-native'
+import { Text, Switch, Icon, Toast, Container, Header, Right, Left, Body, Title, Content, Button, Footer, FooterTab, ActionSheet } from 'native-base'
+import { Image, ActivityIndicator, View, StyleSheet, Alert } from 'react-native'
 import { connect } from 'react-redux'
-import AttendaceList from '../../components/AttendanceList'
+import AttendanceList from '../../components/AttendanceList'
 import { GetLectureAttendance, changeStudentAttendance, changeLectureAttendance, submitAttendance } from './actions'
-import { Button } from '../../node_modules/react-native-elements';
+import { ErrorView } from '../../components/ErrorView';
 
 class ProfAttendanceScreen extends React.Component {
 
@@ -18,12 +19,39 @@ class ProfAttendanceScreen extends React.Component {
 
     _toggleStatus = () => {
         currStatus = this.props.attendance_status
-        console.log('toggle status called')
-        console.log(currStatus)
-        this.props.changeLectureAttendance(this.props.navigation.state.params.lecture_id, !currStatus)
+        this.props.changeLectureAttendance('2', !currStatus)
     }
 
-    _changeStdAttendance = (lecture_id, student_id, attendance) => {
+    _onOpenActionMenu = () => {
+        const BUTTONS = ["Refresh list", this._getTitleFromProp(), "Submit the attendance", "Cancel"];
+        const DESTRUCTIVE_INDEX = 2;
+        const CANCEL_INDEX = 3;
+        ActionSheet.show(
+            {
+                options: BUTTONS,
+                cancelButtonIndex: CANCEL_INDEX,
+                destructiveButtonIndex: DESTRUCTIVE_INDEX,
+                title: "What do you want ?",
+            },
+            buttonIndex => {
+                switch (buttonIndex) {
+                    case 0:
+                        this._getLectureAttendance(2)
+                        break
+                    case 1:
+                        this._toggleStatus()
+                        break
+                    case 2:
+                        this._confirmSubmitAttendance()
+                        break
+                }
+                this.setState({ clicked: BUTTONS[buttonIndex] });
+            }
+        )
+    }
+
+    _changeStdAttendance = (student_id, attendance) => {
+        lecture_id = '2'
         this.props.changeStudentAttendance(lecture_id, student_id, attendance)
     }
 
@@ -42,20 +70,19 @@ class ProfAttendanceScreen extends React.Component {
 
     _confirmSubmitAttendance() {
         Alert.alert('caution', "you can't edit this attendance again, are you sure to submit it", [
-            { text: 'submit', onPress:() => this._submitAttendance() },
+            { text: 'submit', onPress: () => this._submitAttendance() },
             { text: 'cancel' },],
             { cancelable: false })
     }
 
     _submitAttendance() {
-        lecture_id = this.props.navigation.state.params.lecture_id;
+        lecture_id = '2';
 
         this.props.submitAttendance(lecture_id)
     }
 
     componentWillMount() {
-        lecture_id = this.props.navigation.state.params.lecture_id;
-        
+        lecture_id = '2' //this.props.navigation.state.params.lecture_id;
         this._getLectureAttendance(lecture_id);
     }
 
@@ -74,6 +101,21 @@ class ProfAttendanceScreen extends React.Component {
         else if (nextProps.submit_attendance_error) {
             this.alert('info', nextProps.submit_attendance_error)
         }
+
+        const change_std_att_msg = nextProps.change_std_att_msg
+        const change_std_att_error = nextProps.change_std_att_error
+        if (change_std_att_msg) {
+            Toast.show({
+                text: 'attendance changed successfully',
+                type: 'success'
+            })
+        }
+        else if (change_std_att_error) {
+            Toast.show({
+                text: "attendance doesn't change, try re-attend again or refresh",
+                type: 'warning',
+            })
+        }
     }
 
     alert = (title, msg) => {
@@ -87,8 +129,8 @@ class ProfAttendanceScreen extends React.Component {
         )
     }
 
-    attendanceRender(attendancelist, attendance_list_loading) {
-        if (!attendancelist)
+    attendanceRender(attendance_list, attendance_list_loading) {
+        if (!attendance_list)
             return;
         if (attendance_list_loading) {
             return (
@@ -98,7 +140,7 @@ class ProfAttendanceScreen extends React.Component {
                 </View>
             )
         }
-        else if (attendancelist.length === 0) {
+        else if (attendance_list.length === 0) {
             return (
                 <Image style={styles.Image} source={require('../../images/no_results_found.png')}>
                 </Image>
@@ -106,15 +148,13 @@ class ProfAttendanceScreen extends React.Component {
         }
         else {
             return (
-                <View>
-                    <AttendaceList
-                        marginTop={20}
-                        list={attendancelist}
-                        lecture_id={this.props.navigation.state.params.lecture_id}
-                        onAttendanceChange={this._changeStdAttendance}
-                        onCountChange={(newCount) => this._updateCount(newCount)}
-                    />
-                </View>
+                <AttendanceList
+                    marginTop={20}
+                    list={attendance_list}
+                    //lecture_id='2' //{this.props.navigation.state.params.lecture_id}
+                    onAttendanceChange={(stdId, attend) => this._changeStdAttendance(stdId, attend)}
+                    onCountChange={(newCount) => this._updateCount(newCount)}
+                />
             )
         }
     }
@@ -125,29 +165,37 @@ class ProfAttendanceScreen extends React.Component {
         const get_lecture_attendance_loading = this.props.get_lecture_attendance_loading
         const get_lecture_attendance_error = this.props.get_lecture_attendance_error
 
-        const change_std_att_msg = this.props.change_std_att_msg
-        const change_std_att_error = this.props.change_std_att_error
-        const change_std_att_loading = this.props.change_std_att_loading
-
-        console.log("item loading", change_std_att_loading)
-        console.log(`the attendnace status in props = ${this.props.attendance_status}`)
-        if (change_std_att_msg) {
-            this.alert('Successful', change_std_att_msg.mes)
-        }
-        else if (change_std_att_error) {
-            this.alert('Error !!!', change_std_att_error.err)
+        if (get_lecture_attendance_error) {
+            return <ErrorView logMessage={get_lecture_attendance_error} userMessage="can't get the lecture data"
+                onRetry={() => this._getLectureAttendance('2')} />
         }
 
-        console.log(get_lecture_attendance_loading, "   is the loading of list")
         return (
-            <View style={styles.MainContainer}>
-                <Button title='Refresh' onPress={() => this._getLectureAttendance(this.props.navigation.state.params.lecture_id)} />
-                <Button title={this._getTitleFromProp()} onPress={() => this._toggleStatus()} />
-                <Button title='Submit attendance' onPress={() => this._confirmSubmitAttendance()} />
-                <Text> {this._getAttendanceStatusMessageFromProp()} </Text>
-                <Text> {this.state.attendance_count} / {this.state.all_student_count} </Text>
-                {this.attendanceRender(attendance_list, get_lecture_attendance_loading)}
-            </View>
+            <Container>
+                <Header>
+                    <Body>
+                        <Title>Lecture Attendance</Title>
+                    </Body>
+                    <Right>
+                        <Button onPress={this._onOpenActionMenu}>
+                            <Icon name='dots-vertical' type='MaterialCommunityIcons' />
+                        </Button>
+                    </Right>
+                </Header>
+                <Content padder>
+                    <Text style={{ fontSize: 50, color: 'red', textAlign: 'center' }}> {this.state.attendance_count} / {this.state.all_student_count} </Text>
+                    <Text> {this._getAttendanceStatusMessageFromProp()} </Text>
+                    {this.attendanceRender(attendance_list, get_lecture_attendance_loading)}
+                </Content>
+            </Container>
+            // <View style={styles.MainContainer}>
+            //     <Text style={{ fontSize: 50, color: 'red', textAlign: 'center' }}> {this.state.attendance_count} / {this.state.all_student_count} </Text>
+            //     <Button title='Refresh' onPress={() => this._getLectureAttendance('2')} />
+            //     <Button title={this._getTitleFromProp()} onPress={() => this._toggleStatus()} />
+            //     <Button title='Submit attendance' onPress={() => this._confirmSubmitAttendance()} />
+            //     <Text> {this._getAttendanceStatusMessageFromProp()} </Text>
+            //     {/* {this.attendanceRender(attendance_list, get_lecture_attendance_loading)} */}
+            // </View>
         )
     }
 }
@@ -185,18 +233,6 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         justifyContent: 'flex-start',
         backgroundColor: '#EEEEEE',
-    },
-    PickerContainer:
-    {
-        marginRight: 0,
-        marginLeft: 0,
-    },
-    ListContainer:
-    {
-        flex: 3,
-        justifyContent: 'flex-start',
-        backgroundColor: 'white'
-
     },
     LoadingContainer: {
         flex: 1,

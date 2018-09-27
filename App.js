@@ -10,6 +10,7 @@ import AuthScreen from './features/auth'
 import CoursesScreen from './features/courses_available';
 import StudentAttendanceScreen from './features/attendance_student';
 import ProfAttendanceScreen from './features/attendance_prof';
+import { Root } from 'native-base';
 
 const ProfAppNavigator = createStackNavigator(
   {
@@ -56,10 +57,29 @@ const AppNavigator = createSwitchNavigator(
 );
 
 export default class App extends React.Component {
+  state = {
+    isReady: false
+  }
+  async componentWillMount() {
+    await Expo.Font.loadAsync({
+      // Roboto: require("native-base/Fonts/Roboto.ttf"),
+      Roboto_medium: require("native-base/Fonts/Roboto_medium.ttf"),
+      Ionicons: require("@expo/vector-icons/fonts/Ionicons.ttf"),
+      MaterialCommunityIcons: require("@expo/vector-icons/fonts/MaterialCommunityIcons.ttf"),
+      // awesome:require('custom-fonts/fa.ttf'),
+    });
+    this.setState({ isReady: true });
+  }
+
   render() {
+    if (!this.state.isReady) {
+      return <AppLoading />;
+    }
     return (
       <Provider store={store}>
-        <AppNavigator />
+        <Root>
+          <AppNavigator />
+        </Root>
       </Provider>
     );
   }
