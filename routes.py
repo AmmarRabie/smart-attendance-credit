@@ -241,9 +241,9 @@ def submitLectureAttendance(prof, lecture_id):
     return jsonify({'msg': 'submitted'}), 200
 
 
-@routeJsonAndXml('/<student_id>/lectures.{}', root='lectures')
+@routeJsonAndXml('/std/lectures.{}', root='lectures')
 @userRequired('std')
-def getStdAvailableLectures(std, student_id):
+def getStdAvailableLectures(std):
     openLectures = Lecture.query.filter_by(attendanceStatusOpen=True)
     lectures = []
     for lecture in openLectures:
@@ -265,9 +265,9 @@ def getStdAvailableLectures(std, student_id):
     return lectures
 
 
-@routeJsonAndXml('/prof/<professor_id>/lectures.{}', root='lectures')
+@routeJsonAndXml('/prof/lectures.{}', root='lectures')
 @userRequired('prof')
-def getProfLectures(prof, professor_id):
+def getProfLectures(prof):
     profLectures = Lecture.query.filter_by(owner_id=prof['id'])
     lectures = []
     for lecture in profLectures:
@@ -277,6 +277,13 @@ def getProfLectures(prof, professor_id):
         lectures.append(curr)
     return lectures
 
+@app.route('/lecture/<lecture_id>/status')
+@userRequired()
+def getLectureAttendanceStatus(user, lecture_id):
+    lecture = Lecture.query.filter_by(id=lecture_id).first()
+    if (not lecture):
+        return jsonify({'err': 'no such lecture'}), 404
+    return jsonify({'status': lecture.attendanceStatusOpen})
 
 @app.route('/login')
 def login():
@@ -293,7 +300,7 @@ def login():
     except requests.exceptions.ConnectionError as error:
         return 'exception', {'msg': 'server is down now, try again later', 'detail': str(error)}, 200
     if(not isFacultyUser(r.text)):
-        return jsonify({'err': 'incorrect id or password '}), 400
+        return jsonify({'err': 'incorrect id or password '}), 401
 
     role = ('std', 'prof')[not userId.isdigit()]
     token = jwtEncode({
