@@ -1,7 +1,7 @@
 import CONFIG from "../../config.json";
 
-export const fetchLectures = async (professorId) => {
-    const url = `http://${CONFIG.server_ip}/prof/${professorId}/lectures.json`
+export const fetchLectures = async () => {
+    const url = `http://${CONFIG.server_ip}/prof/lectures.json`
     console.log(url)
     const response = await fetch(url, {
         method: 'GET',

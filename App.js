@@ -30,10 +30,11 @@ const ProfAppNavigator = createStackNavigator(
 
 const StdAppNavigator = createStackNavigator(
   {
-    StudentSession: StudentAttendanceScreen, // in future this should be something like tab navigator
+    openLectures: OpenLecturesScreen, // in future this should be something like tab navigator
+    lectureAttendance:LectureAttendanceScreen
   },
   {
-    initialRouteName: 'StudentSession',
+    initialRouteName: 'openLectures',
     navigationOptions: {
       headerTintColor: '#a41034',
       headerStyle: {
