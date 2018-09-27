@@ -46,7 +46,8 @@ def routeJsonAndXml(url, root='root'):
 
 
 @routeJsonAndXml('/courses-available.{}', root='courses')
-def getCoursesAvailable():
+@userRequired('prof')
+def getCoursesAvailable(prof):
     # get parameters
     code = request.args.get('code')
     beginTime = request.args.get('begin')
@@ -56,7 +57,7 @@ def getCoursesAvailable():
 
     # get all schedules data
     try:
-        r = requests.get('https://std.eng.cu.edu.eg/schedules.aspx/?s=0')
+        r = requests.get('http://std.eng.cu.edu.eg/schedules.aspx/?s=0')
     except requests.exceptions.ConnectionError as error:
         return 'exception', {'msg': 'server is down now, try again later', 'detail': str(error)}, 200
     root = ET.fromstring(r.text)
@@ -78,7 +79,7 @@ def getCoursesAvailable():
 @routeJsonAndXml('/codes.{}', root='codes')
 def getAllCodes():
     try:
-        r = requests.get('https://std.eng.cu.edu.eg/schedules.aspx/?s=0')
+        r = requests.get('http://std.eng.cu.edu.eg/schedules.aspx/?s=0')
     except requests.exceptions.ConnectionError as error:
         return 'exception', {'msg': 'server is down now, try again later', 'detail': str(error)}, 200
     print('at getAllCodes: data received from api')
@@ -96,7 +97,8 @@ def getAllCodes():
 
 
 @routeJsonAndXml('/lecture.{}/<lecture_id>', 'lecture')
-def getLectureInfo(lecture_id):
+@userRequired('prof')
+def getLectureInfo(prof, lecture_id):
     lecture = Lecture.query.filter_by(id=lecture_id).first()
     if (not lecture):
         return 'err', 'no such lecture', 404  # root, result, status
@@ -108,7 +110,7 @@ def getLectureInfo(lecture_id):
             attendanceList.append(str(att.student_id))
 
     studentAttendanceData = []
-    url = 'https://std.eng.cu.edu.eg/schedules.aspx/?s={}'.format(
+    url = 'http://std.eng.cu.edu.eg/schedules.aspx/?s={}'.format(
         lecture.schedule_id)
     print('fetching from: %r' % url)
     try:
@@ -125,26 +127,29 @@ def getLectureInfo(lecture_id):
             'name': student.find('StdNameArabic').text,
             'attend': currentId in attendanceList
         })
-    return {'id': lecture.id, 'status': lecture.attendanceStatusOpen, 'schedule_id': lecture.schedule_id, 'att': studentAttendanceData}
+    lectureInfo = lecture.as_dict()
+    lectureInfo['att'] = studentAttendanceData
+    return lectureInfo
 
 
 @app.route('/lecture/new/<schedule_id>', methods=['post'])
-# @professor
-def insertLecture(schedule_id):
+@userRequired('prof')
+def insertLecture(prof, schedule_id):
     # should validate here the schedule id, but it requires fetching large data to only validate
-    newL = Lecture(schedule_id=schedule_id, attendanceStatusOpen=False)
+    newL = Lecture(schedule_id=schedule_id, attendanceStatusOpen=False, owner_id=prof['id'])
     db.session.add(newL)
     db.session.commit()
     return jsonify({'id': newL.id}), 200
 
 
 @app.route('/changeStatus/<lecture_id>/<status>', methods=['post'])
-# @professor
-def changeLectureStatus(lecture_id, status):
-    # should validate that he is the owner!!
+@userRequired('prof')
+def changeLectureStatus(prof, lecture_id, status):
     lecture = Lecture.query.filter_by(id=lecture_id).first()
     if (not lecture):
         return jsonify({'err': 'no such lecture'}), 404
+    if (not prof['id'] == lecture.owner_id):
+        return jsonify({'err': 'owner only can change the attendance status'}), 403
     if (not(status == '0' or status == '1')):
         return jsonify({'err': 'status should be 0 or 1, can\'t be ' + status}), 400
     lecture.attendanceStatusOpen = (False, True)[int(status)]
@@ -153,15 +158,20 @@ def changeLectureStatus(lecture_id, status):
 
 
 @app.route('/attendance/<student_id>/<lecture_id>/<isAttend>')
-# @user
-def changeStdAttendance(student_id, lecture_id, isAttend):
-    # [TODO]: make sure that if the user is student, he update his attendance only
+@userRequired('any')
+def changeStdAttendance(user, student_id, lecture_id, isAttend):
     lecture = Lecture.query.filter_by(id=lecture_id).first()
     if (not lecture):
         return jsonify({'err': 'no such lecture'}), 404
+    # std => should be his attendance and atetndance is open
+    if (user['role'] == 'std'):
+        if(user['id'] != student_id):
+            return jsonify({'err': "student can only update his attendance"}), 403
+        if (lecture.attendanceStatusOpen == False):
+            return jsonify({'err': 'not allowed, attendance is closed now'}), 403
+    elif (lecture.owner_id != user['id']):
+        return jsonify({'err': 'owner only can change the attendance of students'}), 403
 
-    if (lecture.attendanceStatusOpen == False):
-        return jsonify({'err': 'not allowed, attendance is closed now'}), 403
 
     for att in lecture.attendance:
         if (str(att.student_id) == student_id):
@@ -170,8 +180,7 @@ def changeStdAttendance(student_id, lecture_id, isAttend):
             db.session.commit()
             return jsonify({'mes': 'attendance updated successfully'}), 200
 
-    url = 'https://std.eng.cu.edu.eg/schedules.aspx/?s=' + \
-        str(lecture.schedule_id)
+    url = 'http://std.eng.cu.edu.eg/schedules.aspx/?s={}'.format(lecture.schedule_id)
     print('fetching from: %r' % url)
     try:
         r = requests.get(url)
@@ -193,13 +202,14 @@ def changeStdAttendance(student_id, lecture_id, isAttend):
 
 
 @app.route('/submit/<lecture_id>', methods=['post'])
-def submitLectureAttendance(lecture_id):
-    # [TODO]: should be the owner of the lecture
-
-    lecture = getLectureInfo(lecture_id)
+@userRequired('prof')
+def submitLectureAttendance(prof, lecture_id):
+    lecture = getLectureInfo(prof, lecture_id)
     if (type(lecture) is tuple):  # there is an error ocurred
-        return jsonify({'err': lecture[1]}), 404
+        return jsonify({'err': lecture[1]}), lecture[2]
 
+    if (not prof['id'] == lecture['owner_id']):
+        return jsonify({'err': 'owner only can submit the attendance'}), 403
     # build request data
     url = 'http://chws.eng.cu.edu.eg/webservice1.asmx?op=GetData'
     contentType = 'application/soap+xml; charset=utf-8'
@@ -212,7 +222,7 @@ def submitLectureAttendance(lecture_id):
         </GetData>
     </soap12:Body>
     </soap12:Envelope>
-    '''.format('testm', 'testm', lecture.get('schedule_id'), attendanceDataFormated)
+    '''.format(prof['id'], prof['password'], lecture.get('schedule_id'), attendanceDataFormated)
 
     # try to make the request
     try:
@@ -232,7 +242,8 @@ def submitLectureAttendance(lecture_id):
 
 
 @routeJsonAndXml('/<student_id>/lectures.{}', root='lectures')
-def getStdAvailableLectures(student_id):
+@userRequired('std')
+def getStdAvailableLectures(std, student_id):
     openLectures = Lecture.query.filter_by(attendanceStatusOpen=True)
     lectures = []
     for lecture in openLectures:
@@ -241,12 +252,12 @@ def getStdAvailableLectures(student_id):
         # [TODO]: may be more than lecture have the same schedule id!!, it shouldn't be only one open
         try:
             r = requests.get(
-                'https://std.eng.cu.edu.eg/schedules.aspx/?s={}'.format(lecture.schedule_id))
+                'http://std.eng.cu.edu.eg/schedules.aspx/?s={}'.format(lecture.schedule_id))
         except requests.exceptions.ConnectionError as error:
             return 'exception', {'msg': 'server is down now, try again later', 'detail': str(error)}, 200
         root = ET.fromstring(r.text)
         for student in root.findall('Student'):
-            if (student.find('StdCode').text != student_id):
+            if (student.find('StdCode').text != std['id']):
                 continue
             lectures.append( lecture.as_dict())
             # uncomment break if you want only first lecture
@@ -255,8 +266,9 @@ def getStdAvailableLectures(student_id):
 
 
 @routeJsonAndXml('/prof/<professor_id>/lectures.{}', root='lectures')
-def getProfLectures(professor_id):
-    profLectures = Lecture.query.filter_by(owner_id=professor_id)
+@userRequired('prof')
+def getProfLectures(prof, professor_id):
+    profLectures = Lecture.query.filter_by(owner_id=prof['id'])
     lectures = []
     for lecture in profLectures:
         curr = lecture.as_dict()

@@ -15,7 +15,7 @@ def user_token_available(role='any'):
                 try:
                     data = jwtDecode(token, app_secret_key)
                     if (data['role'] == role or role == 'any'):
-                        currUser = {'id': data.get('username'), 'password': data.get('password')}
+                        currUser = {'id': data.get('username'), 'password': data.get('password'), 'role':data['role']}
                         print('{} successfully found'.format(currUser['id']))
                     else:
                         error = 'Not allowed for this user'
