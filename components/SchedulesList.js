@@ -23,6 +23,7 @@ class SchedulesList extends React.Component {
                             avatar={require('../images/university.png')}
                             title={l.Name}
                             key={l.key}
+                               onPress={() => this.props.onSchedulePress(l.scheduleID)}
                             subtitle={
                                 <View>
                                     <View style={styles.subtitleView}>

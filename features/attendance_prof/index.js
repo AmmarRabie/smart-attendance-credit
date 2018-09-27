@@ -20,7 +20,7 @@ class ProfAttendanceScreen extends React.Component {
         currStatus = this.props.attendance_status
         console.log('toggle status called')
         console.log(currStatus)
-        this.props.changeLectureAttendance(3, !currStatus)
+        this.props.changeLectureAttendance(this.props.navigation.state.params.lecture_id, !currStatus)
     }
 
     _changeStdAttendance = (lecture_id, student_id, attendance) => {
@@ -48,11 +48,15 @@ class ProfAttendanceScreen extends React.Component {
     }
 
     _submitAttendance() {
-        this.props.submitAttendance(3)
+        lecture_id = this.props.navigation.state.params.lecture_id;
+
+        this.props.submitAttendance(lecture_id)
     }
 
     componentWillMount() {
-        this._getLectureAttendance(3);
+        lecture_id = this.props.navigation.state.params.lecture_id;
+        
+        this._getLectureAttendance(lecture_id);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -106,7 +110,7 @@ class ProfAttendanceScreen extends React.Component {
                     <AttendaceList
                         marginTop={20}
                         list={attendancelist}
-                        lecture_id={3}
+                        lecture_id={this.props.navigation.state.params.lecture_id}
                         onAttendanceChange={this._changeStdAttendance}
                         onCountChange={(newCount) => this._updateCount(newCount)}
                     />
@@ -127,7 +131,6 @@ class ProfAttendanceScreen extends React.Component {
 
         console.log("item loading", change_std_att_loading)
         console.log(`the attendnace status in props = ${this.props.attendance_status}`)
-
         if (change_std_att_msg) {
             this.alert('Successful', change_std_att_msg.mes)
         }
@@ -138,7 +141,7 @@ class ProfAttendanceScreen extends React.Component {
         console.log(get_lecture_attendance_loading, "   is the loading of list")
         return (
             <View style={styles.MainContainer}>
-                <Button title='Refresh' onPress={() => this._getLectureAttendance(3)} />
+                <Button title='Refresh' onPress={() => this._getLectureAttendance(this.props.navigation.state.params.lecture_id)} />
                 <Button title={this._getTitleFromProp()} onPress={() => this._toggleStatus()} />
                 <Button title='Submit attendance' onPress={() => this._confirmSubmitAttendance()} />
                 <Text> {this._getAttendanceStatusMessageFromProp()} </Text>
