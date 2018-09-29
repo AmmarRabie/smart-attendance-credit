@@ -5,33 +5,31 @@ import {
 import { createStackNavigator, createSwitchNavigator } from 'react-navigation'
 import store from './store'
 import { Provider } from 'react-redux';
-
+import {AppLoading} from 'expo'
 import AuthScreen from './features/auth'
 import CoursesScreen from './features/courses_available';
-import StudentAttendanceScreen from './features/attendance_student';
 import ProfAttendanceScreen from './features/attendance_prof';
+import OpenLecturesScreen from './features/open_lectures';
+import LectureAttendanceScreen from './features/lecture_attendance';
+import ProfCreatedLecturesScreen from './features/prof_created_lectures'
 import { Root } from 'native-base';
 
 const ProfAppNavigator = createStackNavigator(
   {
     Courses: CoursesScreen,
-    ProfSession: ProfAttendanceScreen, // in future this should be something like tab navigator
+    ProfSession: ProfAttendanceScreen,
+    MyLectures: ProfCreatedLecturesScreen,
   },
   {
     initialRouteName: 'Courses',
-    navigationOptions: {
-      headerTintColor: '#a41034',
-      headerStyle: {
-        backgroundColor: '#fff',
-      },
-    },
+    headerMode: 'none',
   }
 );
 
 const StdAppNavigator = createStackNavigator(
   {
     openLectures: OpenLecturesScreen, // in future this should be something like tab navigator
-    lectureAttendance:LectureAttendanceScreen
+    lectureAttendance:LectureAttendanceScreen,
   },
   {
     initialRouteName: 'openLectures',
@@ -53,7 +51,7 @@ const AppNavigator = createSwitchNavigator(
     Courses: CoursesScreen
   },
   {
-    initialRouteName: 'ProfApp',
+    initialRouteName: 'Auth',
   }
 );
 

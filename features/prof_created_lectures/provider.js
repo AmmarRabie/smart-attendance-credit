@@ -1,4 +1,5 @@
 import CONFIG from "../../config.json";
+import { getStoreToken as getUserToken} from '../../store';
 
 export const fetchLectures = async () => {
     const url = `http://${CONFIG.server_ip}/prof/lectures.json`

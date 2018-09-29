@@ -2,7 +2,7 @@ import CONFIG from '../../config.json'
 import { getStoreToken as getUserToken} from '../../store';
 
 export const fetchStudentActiveLectures= async ()=>{
-    const url=`http://${CONFIG.server_ip}/lectures.json`
+    const url=`http://${CONFIG.server_ip}/std/lectures.json`
     console.log(url)
     const response=await fetch(url,{
         method:'GET',

@@ -19,7 +19,7 @@ class ProfAttendanceScreen extends React.Component {
 
     _toggleStatus = () => {
         currStatus = this.props.attendance_status
-        this.props.changeLectureAttendance('2', !currStatus)
+        this.props.changeLectureAttendance(this.props.navigation.getParam('lecture_id'), !currStatus)
     }
 
     _onOpenActionMenu = () => {
@@ -51,7 +51,7 @@ class ProfAttendanceScreen extends React.Component {
     }
 
     _changeStdAttendance = (student_id, attendance) => {
-        lecture_id = '2'
+        lecture_id = this.props.navigation.getParam('lecture_id')
         this.props.changeStudentAttendance(lecture_id, student_id, attendance)
     }
 
@@ -76,13 +76,13 @@ class ProfAttendanceScreen extends React.Component {
     }
 
     _submitAttendance() {
-        lecture_id = '2';
+        lecture_id = this.props.navigation.getParam('lecture_id');
 
         this.props.submitAttendance(lecture_id)
     }
 
     componentWillMount() {
-        lecture_id = '2' //this.props.navigation.state.params.lecture_id;
+        lecture_id = this.props.navigation.getParam('lecture_id') //this.props.navigation.state.params.lecture_id;
         this._getLectureAttendance(lecture_id);
     }
 
@@ -151,7 +151,6 @@ class ProfAttendanceScreen extends React.Component {
                 <AttendanceList
                     marginTop={20}
                     list={attendance_list}
-                    //lecture_id='2' //{this.props.navigation.state.params.lecture_id}
                     onAttendanceChange={(stdId, attend) => this._changeStdAttendance(stdId, attend)}
                     onCountChange={(newCount) => this._updateCount(newCount)}
                 />
@@ -167,7 +166,7 @@ class ProfAttendanceScreen extends React.Component {
 
         if (get_lecture_attendance_error) {
             return <ErrorView logMessage={get_lecture_attendance_error} userMessage="can't get the lecture data"
-                onRetry={() => this._getLectureAttendance('2')} />
+                onRetry={() => this._getLectureAttendance(this.props.navigation.getParam('lecture_id'))} />
         }
 
         return (

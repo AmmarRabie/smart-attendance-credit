@@ -12,7 +12,7 @@ class OpenLecturesScreen extends React.Component {
     }
 
     componentWillMount() {
-
+        console.log('open lectures screen will mount')
         this._getLectures('1170406')
 
     }
@@ -20,7 +20,7 @@ class OpenLecturesScreen extends React.Component {
     //   console.log(nextProps.studentOpenLectures.lecture.id)  
         if (nextProps.studentOpenLectures && nextProps.studentOpenLectures.length === 1)
     {  console.log('receive props')
-                    this.props.navigation.navigate('lectureAttendance', { Lecture: nextProps.studentOpenLectures[0].id, stdId: '11170406' })
+                    this.props.navigation.navigate('lectureAttendance', { Lecture: nextProps.studentOpenLectures[0].id })
 
     }    
 }
@@ -29,7 +29,7 @@ class OpenLecturesScreen extends React.Component {
     }
     navigateFunction(id) {
         console.log(id)
-        this.props.navigation.navigate('lectureAttendance', { Lecture: id, stdId: '1170406' })
+        this.props.navigation.navigate('lectureAttendance', { Lecture: id })
     }
     openLecturesRender(openLectures, Loading) {
     console.log(`open Lectures Renderer  ${openLectures}`)

@@ -24,7 +24,7 @@ class LectureAttendanceScreen extends React.Component {
     }
 
     takeStudentAttendance() {
-        this.props.makeStudentAttend(this.props.navigation.getParam('stdId'), this.props.navigation.getParam('Lecture'))
+        this.props.makeStudentAttend(this.props.navigation.getParam('Lecture'))
         console.log(`takeStudentAttendance ${this.props.studnetIsAttend}`)
     }
     render() {

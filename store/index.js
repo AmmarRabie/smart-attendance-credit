@@ -34,4 +34,4 @@ export const reducers = combineReducers({
 
 export default store = createStore(reducers, applyMiddleware(thunk));
 
-export const getStoreToken = () => store.auth.token
+export const getStoreToken = () => store.getState().auth.userData.token
