@@ -4,6 +4,8 @@ import { connect } from 'react-redux'
 import { GetOpenLectures ,makeStudentAttend} from './Actions'
 import OpenLecturesList from '../../components/openLecturesList'
 import OfflineNotice from '../../components/offlineComponent'
+import { Constants } from 'expo';
+
 
 
 class OpenLecturesScreen extends React.Component {
@@ -62,13 +64,17 @@ class OpenLecturesScreen extends React.Component {
         if (openLecturesError) {
             console.warn(openLecturesError)
             return (
-                <Image style={styles.Image} source={require('../../images/error_state.jpg')}>
-                </Image>
+                <View>
+                    <View style={styles.statusBar} />
+                    <Image style={styles.Image} source={require('../../images/error_state.jpg')}>
+                    </Image>
+                </View>
             )
         }
 
         return (
             <View style={styles.MainContainer}>
+                <View style={styles.statusBar} />
                 <OfflineNotice style={{ height:100}}/>
                 {this.openLecturesRender(Lectures, openLecturesLoading)}
             </View>
@@ -132,5 +138,9 @@ const styles = StyleSheet.create({
         width: null,
         height: null,
         resizeMode: 'stretch',
-    }
+    },
+     statusBar: {
+        backgroundColor: "#000000",
+        height: Constants.statusBarHeight,
+    },
 });

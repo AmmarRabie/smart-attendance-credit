@@ -3,6 +3,8 @@ import { Button,View, ImageBackground, StyleSheet, Text, TextInput } from 'react
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 import { logInUser } from './authActions'
+import { Constants } from 'expo';
+
 
 class AuthScreen extends React.Component {
     static propTypes = {
@@ -37,7 +39,9 @@ class AuthScreen extends React.Component {
 
     render() {
         return (
-                <ImageBackground style={{flex:1}} source={require('../../images/lecture.jpg')} resizeMode='cover' blurRadius={3}>
+            <ImageBackground style={{ flex: 1,}} source={require('../../images/lecture.jpg')} resizeMode='cover' blurRadius={3}>
+                <View style={styles.statusBar} />
+                
                 <View style={styles.login}>
                     <TextInput style={styles.textInput}
                         placeholder="Username"
@@ -83,6 +87,7 @@ const styles = StyleSheet.create({
         paddingBottom: 9,
         paddingLeft: 9,
         paddingRight: 9,
+        backgroundColor: 'darkblue'
     },
     textInput: {
         borderRadius: 15,
@@ -100,6 +105,10 @@ const styles = StyleSheet.create({
      
 
         color: 'white',
+    },
+    statusBar: {
+        backgroundColor: "#000000",
+        height: Constants.statusBarHeight,
     },
 })
 

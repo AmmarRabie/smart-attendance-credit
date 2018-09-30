@@ -7,6 +7,8 @@ import { fetchLectures } from './actions'
 import LecturesList from '../../components/LecturesList'
 import AppLoadingIndicator from '../../components/AppLoadingIndicator';
 import lecturesLinker from './linker'
+import { Constants } from 'expo';
+
 
 
 class ProfLecturesScreen extends React.Component {
@@ -42,7 +44,10 @@ class ProfLecturesScreen extends React.Component {
         if (this.props.error) {
             console.log('error happened: ', this.props.error)
             return (
-                <Image style={styles.Image} source={require('../../images/error_state.jpg')} />
+                <view>
+                    <View style={styles.statusBar} />
+                    <Image style={styles.Image} source={require('../../images/error_state.jpg')} />
+                </view>
             )
         }
         if (this.props.isLoading)
@@ -50,6 +55,7 @@ class ProfLecturesScreen extends React.Component {
 
         return (
             <View style={styles.MainContainer}>
+                <View style={styles.statusBar} />
                 <Card containerStyle={styles.PickerContainer} >
                     <Button
                         title='Refresh'
@@ -101,5 +107,9 @@ const styles = StyleSheet.create({
         width: null,
         height: null,
         resizeMode: 'stretch',
-    }
+    },
+    statusBar: {
+        backgroundColor: "#000000",
+        height: Constants.statusBarHeight,
+    },
 });

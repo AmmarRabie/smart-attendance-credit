@@ -2,9 +2,13 @@ import React from 'react'
 import { Text, Switch, Icon, Toast, Container, Header, Right, Left, Body, Title, Content, Button, Footer, FooterTab, ActionSheet } from 'native-base'
 import { Image, ActivityIndicator, View, StyleSheet, Alert } from 'react-native'
 import { connect } from 'react-redux'
+import { Card,Divider } from 'react-native-elements'
+
 import AttendanceList from '../../components/AttendanceList'
 import { GetLectureAttendance, changeStudentAttendance, changeLectureAttendance, submitAttendance } from './actions'
 import { ErrorView } from '../../components/ErrorView';
+import { Constants } from 'expo';
+
 
 class ProfAttendanceScreen extends React.Component {
 
@@ -171,6 +175,7 @@ class ProfAttendanceScreen extends React.Component {
 
         return (
             <Container>
+                <View style={styles.statusBar} />
                 <Header>
                     <Body>
                         <Title>Lecture Attendance</Title>
@@ -183,7 +188,9 @@ class ProfAttendanceScreen extends React.Component {
                 </Header>
                 <Content padder>
                     <Text style={{ fontSize: 50, color: 'red', textAlign: 'center' }}> {this.state.attendance_count} / {this.state.all_student_count} </Text>
-                    <Text> {this._getAttendanceStatusMessageFromProp()} </Text>
+                    <Divider style={styles.divider} />
+                    <Text style= {{textAlign: 'center',}}> {this._getAttendanceStatusMessageFromProp()} </Text>
+                    <Divider style={styles.divider} />
                     {this.attendanceRender(attendance_list, get_lecture_attendance_loading)}
                 </Content>
             </Container>
@@ -240,6 +247,11 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: 'whitesmoke'
     },
+    divider:
+    {
+      marginTop:10,
+      marginBottom:10,
+    },
     headline: {
         textAlign: 'center',
         fontWeight: 'bold',
@@ -253,5 +265,9 @@ const styles = StyleSheet.create({
         width: null,
         height: null,
         resizeMode: 'stretch',
-    }
+    },
+    statusBar: {
+        backgroundColor: "#000000",
+        height: Constants.statusBarHeight,
+    },
 });

@@ -1,6 +1,6 @@
 import React from 'react'
-import { Image, ActivityIndicator, View, Text, StyleSheet, Alert, Picker } from 'react-native'
-import { Icon, Card, Button } from 'react-native-elements'
+import { Image, ActivityIndicator, View, Text, StyleSheet, Alert, Picker ,Button } from 'react-native'
+import {  Card,  } from 'react-native-elements'
 
 import { connect } from 'react-redux'
 import { GetCodes, GetWantedSchedules, openNewLecture } from './actinos'
@@ -129,6 +129,7 @@ class CoursesScreen extends React.Component {
         const new_lecture_loading = this.props.new_lecture_loading
         const new_lecture_error = this.props.new_lecture_error
 
+        console.log("codes error ",codes_error," codes", codes, " loading", codes_loading)
         if (lecture_id && !new_lecture_loading && !new_lecture_error)  // if new lectue are opened go to its screen 
         {
             this.props.navigation.navigate('ProfSession', { lecture_id: lecture_id })
@@ -141,11 +142,8 @@ class CoursesScreen extends React.Component {
         if (codes_error || schedules_error) {
             console.log(`coderrorView userMessage="can't loads_error=${codes_error}, schedules_error=${schedules_error}`)
             Alert.alert('Error !!!', "can't load proper data", [
-                { text: 'ok' }])
-            // return (
-            //     <Image style={styles.Image} source={require('../../images/error_state.jpg')}>
-            //     </Image>
-            // )
+                { text: 'ok',onPress: () => this._getcodes() }])
+            
         }
         if (codes_loading || new_lecture_loading) {
             return (<AppLoadingIndicator />)
@@ -153,7 +151,8 @@ class CoursesScreen extends React.Component {
 
         return (
             <Container >
-                <Header style={{marginTop: Constants.statusBarHeight}}>
+                <View style={styles.statusBar} />
+                <Header >
                     <Body>
                         <Title>Lecture Attendance</Title>
                     </Body>
@@ -179,7 +178,7 @@ class CoursesScreen extends React.Component {
                                 {this.loadTutorialsTypes()}
                             </Picker>
 
-                            <Button
+                            <Button style={styles.ButtonStyle}
                                 title='Search'
                                 onPress={() => this._getSchedules()}
                             />
@@ -225,7 +224,20 @@ export default connect(mapStateToProps, mapDispatchToProps)(CoursesScreen)
 
 ////// StyleSheet for Courses Screen
 const styles = StyleSheet.create({
-    MainContainer:
+    ButtonStyle:{
+        borderRadius: 20,
+        textAlign: "center",
+        marginLeft: 45,
+        marginRight: 45,
+        marginTop: 20,
+        marginBottom: 20,
+        paddingTop: 9,
+        paddingBottom: 9,
+        paddingLeft: 9,
+        paddingRight: 9,
+        backgroundColor: 'darkblue'
+    }
+    ,MainContainer:
     {
         flex: 1,
         flexDirection: 'column',
@@ -264,5 +276,9 @@ const styles = StyleSheet.create({
         width: null,
         height: null,
         resizeMode: 'stretch',
-    }
+    },
+     statusBar: {
+        backgroundColor: "#000000",
+        height: Constants.statusBarHeight,
+    },
 });

@@ -1,5 +1,7 @@
 import React from 'react'
 import { ActivityIndicator, View, Text, StyleSheet } from 'react-native'
+import { Constants } from 'expo';
+
 
 const AppLoadingIndicator = (props) =>
     <View style={props.style || styles.DefaultLoadingContainer}>
@@ -24,6 +26,10 @@ const styles = StyleSheet.create({
         marginTop: 0,
         width: 200,
         textAlignVertical: "center"
+    },
+    statusBar: {
+        backgroundColor: "#000000",
+        height: Constants.statusBarHeight,
     },
 });
 

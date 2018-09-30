@@ -28,7 +28,6 @@ class SchedulesList extends React.Component {
                                 <View>
                                     <View style={styles.subtitleView}>
                                         <Text style={styles.ratingText}> Code: {l.Code} </Text>
-                                        <Text style={styles.ratingText}> Location: {l.Location}</Text>
                                     </View>
                                     <View style={styles.subtitleView}>
                                         <Text style={styles.ratingText}> Day: {l.DayName} </Text>
