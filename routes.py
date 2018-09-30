@@ -7,7 +7,7 @@ from flask import jsonify, request
 from jwt import encode as jwtEncode
 from xmltodict import parse as xmltodic
 from sqlalchemy import desc
-from app import app, db
+from App import app, db
 from config import app_secret_key
 from helpers import (buildUrlWithParams, filterCode, filterWithChild,
                       formatAttendanceFromDic, isFacultyUser)
@@ -80,7 +80,7 @@ def getCoursesAvailable(prof):
 
 @routeJsonAndXml('/codes.{}', root='codes')
 @userRequired()
-def getAllCodes():
+def getAllCodes(user):
     try:
         r = requests.get('http://std.eng.cu.edu.eg/schedules.aspx/?s=0')
     except requests.exceptions.ConnectionError as error:

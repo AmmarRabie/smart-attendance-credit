@@ -1,4 +1,4 @@
-from app import app
+from App import app
 from models import Lecture, StdAttendance
 import routes
 
