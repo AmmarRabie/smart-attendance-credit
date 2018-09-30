@@ -1,7 +1,6 @@
 from flask import jsonify, request
 from jwt import decode as jwtDecode
 from functools import wraps
-from dicttoxml import dicttoxml as xmlify
 from config import app_secret_key
 
 def user_token_available(role='any'):
@@ -18,40 +17,37 @@ def user_token_available(role='any'):
                         currUser = {'id': data.get('username'), 'password': data.get('password'), 'role':data['role']}
                         print('{} successfully found'.format(currUser['id']))
                     else:
-                        error = 'Not allowed for this user'
+                        error = 'Not allowed for this user', 403
                 except:
-                    error = 'Token is invalid!'
+                    error = 'Token is invalid!', 401
             else:
-                error = 'Token is missing!'
+                error = 'Token is missing!', 401
 
             auth = {'user': currUser, 'error': error}
             return fn(auth, *args, **kwargs)
         decorated.__name__ = "{}_{}".format(decorated.__name__, fn.__name__)
         return decorated
-    #wrapper.__name__ = '{}_{}'.format(wrapper.__name__, random.randint(1,10000))
     return wrapper
 
 
 def userRequired(role='any'):
-    def decorator(fn): # (f, auth)
+    def decorator(fn):
         @user_token_available(role)
         def decorated(auth, *args, **kwargs):
             if(auth['error']):
-                return  'err', {'cause': auth['error']}, 404
+                return  'err', {'cause': auth['error'][0]}, auth['error'][1]
             return fn(auth['user'], *args, **kwargs)
         decorated.__name__ = "{}_{}".format(decorated.__name__, fn.__name__)
         return decorated
-    #decorator.__name__ = '{}_{}'.format(decorator.__name__, random.randint(1,10000))
     return decorator
 
 def userRequiredJson(role='any'):
-    def decorator(fn): # (f, auth)
+    def decorator(fn):
         @user_token_available(role)
         def decorated(auth, *args, **kwargs):
             if(auth['error']):
-                return jsonify({'msg': auth['error']}), 404
+                return jsonify({'msg': auth['error'][0]}), auth['error'][1]
             return fn(auth['user'], *args, **kwargs)
         decorated.__name__ = "{}_{}".format(decorated.__name__, fn.__name__)
         return decorated
-    #decorator.__name__ = '{}_{}'.format(decorator.__name__, random.randint(1,10000))
     return decorator

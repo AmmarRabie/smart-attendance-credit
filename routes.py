@@ -5,14 +5,14 @@ import requests
 from dicttoxml import dicttoxml as xmlify
 from flask import jsonify, request
 from jwt import encode as jwtEncode
-from xmltodict import parse as xmltodic  # , unparse as xmlify2
-
+from xmltodict import parse as xmltodic
+from sqlalchemy import desc
 from app import app, db
 from config import app_secret_key
 from helpers import (buildUrlWithParams, filterCode, filterWithChild,
                       formatAttendanceFromDic, isFacultyUser)
 from models import Lecture, StdAttendance
-from wrappers import user_token_available, userRequired
+from wrappers import user_token_available, userRequired, userRequiredJson
 
 
 def routeJsonAndXml(url, root='root'):
@@ -60,6 +60,8 @@ def getCoursesAvailable(prof):
         r = requests.get('http://std.eng.cu.edu.eg/schedules.aspx/?s=0')
     except requests.exceptions.ConnectionError as error:
         return 'exception', {'msg': 'server is down now, try again later', 'detail': str(error)}, 200
+    except:
+        return 'offfff'
     root = ET.fromstring(r.text)
 
     # filter using parameters
@@ -77,6 +79,7 @@ def getCoursesAvailable(prof):
 
 
 @routeJsonAndXml('/codes.{}', root='codes')
+@userRequired()
 def getAllCodes():
     try:
         r = requests.get('http://std.eng.cu.edu.eg/schedules.aspx/?s=0')
@@ -133,17 +136,18 @@ def getLectureInfo(prof, lecture_id):
 
 
 @app.route('/lecture/new/<schedule_id>', methods=['post'])
-@userRequired('prof')
+@userRequiredJson('prof')
 def insertLecture(prof, schedule_id):
     # should validate here the schedule id, but it requires fetching large data to only validate
-    newL = Lecture(schedule_id=schedule_id, attendanceStatusOpen=False, owner_id=prof['id'])
+    newL = Lecture(schedule_id=schedule_id,
+                   attendanceStatusOpen=False, owner_id=prof['id'])
     db.session.add(newL)
     db.session.commit()
     return jsonify({'id': newL.id}), 200
 
 
 @app.route('/changeStatus/<lecture_id>/<status>', methods=['post'])
-@userRequired('prof')
+@userRequiredJson('prof')
 def changeLectureStatus(prof, lecture_id, status):
     lecture = Lecture.query.filter_by(id=lecture_id).first()
     if (not lecture):
@@ -158,8 +162,10 @@ def changeLectureStatus(prof, lecture_id, status):
 
 
 @app.route('/attendance/<student_id>/<lecture_id>/<isAttend>')
-@userRequired('any')
+@userRequiredJson('any')
 def changeStdAttendance(user, student_id, lecture_id, isAttend):
+    if (student_id == '0'):
+        student_id = user['id']
     lecture = Lecture.query.filter_by(id=lecture_id).first()
     if (not lecture):
         return jsonify({'err': 'no such lecture'}), 404
@@ -172,7 +178,6 @@ def changeStdAttendance(user, student_id, lecture_id, isAttend):
     elif (lecture.owner_id != user['id']):
         return jsonify({'err': 'owner only can change the attendance of students'}), 403
 
-
     for att in lecture.attendance:
         if (str(att.student_id) == student_id):
             att.isAttend = bool(int(isAttend))
@@ -180,7 +185,8 @@ def changeStdAttendance(user, student_id, lecture_id, isAttend):
             db.session.commit()
             return jsonify({'mes': 'attendance updated successfully'}), 200
 
-    url = 'http://std.eng.cu.edu.eg/schedules.aspx/?s={}'.format(lecture.schedule_id)
+    url = 'http://std.eng.cu.edu.eg/schedules.aspx/?s={}'.format(
+        lecture.schedule_id)
     print('fetching from: %r' % url)
     try:
         r = requests.get(url)
@@ -202,7 +208,7 @@ def changeStdAttendance(user, student_id, lecture_id, isAttend):
 
 
 @app.route('/submit/<lecture_id>', methods=['post'])
-@userRequired('prof')
+@userRequiredJson('prof')
 def submitLectureAttendance(prof, lecture_id):
     lecture = getLectureInfo(prof, lecture_id)
     if (type(lecture) is tuple):  # there is an error ocurred
@@ -259,7 +265,7 @@ def getStdAvailableLectures(std):
         for student in root.findall('Student'):
             if (student.find('StdCode').text != std['id']):
                 continue
-            lectures.append( lecture.as_dict())
+            lectures.append(lecture.as_dict())
             # uncomment break if you want only first lecture
             # break
     return lectures
@@ -268,7 +274,8 @@ def getStdAvailableLectures(std):
 @routeJsonAndXml('/prof/lectures.{}', root='lectures')
 @userRequired('prof')
 def getProfLectures(prof):
-    profLectures = Lecture.query.filter_by(owner_id=prof['id'])
+    profLectures = Lecture.query.filter_by(
+        owner_id=prof['id']).order_by(desc(Lecture.time_created))
     lectures = []
     for lecture in profLectures:
         curr = lecture.as_dict()
@@ -278,7 +285,7 @@ def getProfLectures(prof):
     return lectures
 
 @app.route('/lecture/<lecture_id>/status')
-@userRequired()
+@userRequiredJson()
 def getLectureAttendanceStatus(user, lecture_id):
     lecture = Lecture.query.filter_by(id=lecture_id).first()
     if (not lecture):
@@ -296,7 +303,7 @@ def login():
     password = auth.password
 
     try:
-        r = requests.get(buildUrlWithParams(userId, password, 0,0))
+        r = requests.get(buildUrlWithParams(userId, password, 0, 0))
     except requests.exceptions.ConnectionError as error:
         return 'exception', {'msg': 'server is down now, try again later', 'detail': str(error)}, 200
     if(not isFacultyUser(r.text)):
