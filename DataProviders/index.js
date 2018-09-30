@@ -3,6 +3,7 @@
 // so it called data provider
 import base64 from 'base-64'
 import CONFIG from "../config.json";
+import { getStoreToken as getUserToken } from '../store'
 
 // simulation to run without calling api
 const login_simulation = (id, password) => {
@@ -23,32 +24,32 @@ const login_simulation = (id, password) => {
 
 const login = async (id, password) => {
     let headers = new Headers()
-    headers.append('Authorization', 'Basic ' + base64.encode(id + ":" + password));   
+    headers.append('Authorization', 'Basic ' + base64.encode(id + ":" + password));
     const response = await fetch(`http://${CONFIG.server_ip}/login`, {
         method: 'GET',
         headers: headers,
-      })
-    
-      if (response.status == 200) {
-        const {token, role} = await response.json()
-        return {token, role}
-      }
-      const {err} = await response.json()
-      throw new Error(err)
+    })
+
+    if (response.status == 200) {
+        const { token, role } = await response.json()
+        return { token, role }
+    }
+    const { err } = await response.json()
+    throw new Error(err)
 }
 
 export default login
 
 
 export const fetchCodes = async () => {
-    let headers = new Headers()
     const response = await fetch(`http://${CONFIG.server_ip}/codes.json`, {
         method: 'GET',
-        headers: headers})
+        headers: { 'x-access-token': getUserToken() }
+    })
 
-    
+
     if (response.status == 200) {
-        const {codes} = await response.json()
+        const { codes } = await response.json()
         //codes.unshift(" Please choose department ");
         return codes
     }
@@ -56,11 +57,12 @@ export const fetchCodes = async () => {
     throw new Error(error)
 }
 
-export const fetchSchedules = async (type,code) => {
+export const fetchSchedules = async (type, code) => {
     const url = `http://${CONFIG.server_ip}/courses-available.json?type=${encodeURIComponent(type)}&code=${encodeURIComponent(code)}`
     console.log(url)
     const response = await fetch(url, {
         method: 'GET',
+        headers: { 'x-access-token': getUserToken() }
     })
 
     if (response.status == 200) {
@@ -69,7 +71,7 @@ export const fetchSchedules = async (type,code) => {
         // this part of the code  need to be rewritten after we get the response of the api as json 
         // also the component SchedulesList   
         // important *************
-        const {courses} = await response.json()
+        const { courses } = await response.json()
         return courses// [TODO]: force it to be list even it is one item
     }
     const { error } = response.json()
@@ -81,6 +83,7 @@ export const fetchLectureAttendance = async (lecture_id) => {
     console.log(url)
     const response = await fetch(url, {
         method: 'GET',
+        headers: { 'x-access-token': getUserToken() }
     })
 
     if (response.status == 200) {
@@ -89,7 +92,7 @@ export const fetchLectureAttendance = async (lecture_id) => {
         // this part of the code  need to be rewritten after we get the response of the api as json 
         // also the component SchedulesList   
         // important *************
-        const {lecture}  = await response.json()
+        const { lecture } = await response.json()
         return lecture
     }
     const { error } = response.json()
@@ -103,6 +106,7 @@ export const postStudentAttendance = async (lecture_id, student_id, attendance) 
     console.log(url)
     const response = await fetch(url, {
         method: 'GET',
+        headers: { 'x-access-token': getUserToken() }
     })
 
     if (response.status == 200) {
@@ -125,6 +129,7 @@ export const openlecture = async (scheduleId) => {
     const url = `http://${CONFIG.server_ip}/lecture/new/${encodeURIComponent(scheduleId)}`
     const response = await fetch(url, {
         method: 'post',
+        headers: { 'x-access-token': getUserToken() }
     })
 
     if (response.status == 200) {

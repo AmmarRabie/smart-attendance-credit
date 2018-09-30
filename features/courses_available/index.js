@@ -5,19 +5,24 @@ import { Icon, Card, Button } from 'react-native-elements'
 import { connect } from 'react-redux'
 import { GetCodes, GetWantedSchedules, openNewLecture } from './actinos'
 import SchedulesList from '../../components/SchedulesList'
+import AppLoadingIndicator from '../../components/AppLoadingIndicator';
+import {Constants} from 'expo'
+import { Container, Header, Body, Right, Button as ButtonNativeBase, Title, Icon as IconNativeBase, Content, Text as TextNativeBase} from 'native-base';
 
 
 class CoursesScreen extends React.Component {
-    constructor() {
-        super();
-        this.state = {
-            code_holder: '',
-            tutorial_type_holder: 'Lecture',
-            tutorials_types_list: [
-                { type: 'Lecture' },
-                { type: 'Tutorial' }
-            ],
-        }
+
+    static navigationOptions = {
+        title: 'Courses',
+    };
+
+    state = {
+        code_holder: '',
+        tutorial_type_holder: 'Lecture',
+        tutorials_types_list: [
+            { type: 'Lecture' },
+            { type: 'Tutorial' }
+        ],
     }
 
     // fetch the codes before the screen show ups
@@ -28,7 +33,6 @@ class CoursesScreen extends React.Component {
     componentWillReceiveProps(nextProps) {
         if (nextProps.codes[0] && this.state.code_holder === '') {
             const firstCode = (nextProps.codes)[0]
-            console.log('componentWillReceiveProps with prop.codes[0]=', firstCode)
             this.setState({ code_holder: (nextProps.codes)[0] })
             this._getSchedules(firstCode)
         }
@@ -67,6 +71,10 @@ class CoursesScreen extends React.Component {
     }
     _openNewLecture = (scheduleID) => {
         this.props.openNewLecture(scheduleID)
+    }
+
+    _openMyLectures = () => {
+        this.props.navigation.navigate('MyLectures')
     }
 
     _getSchedules = (code = undefined, type = undefined) => {
@@ -121,68 +129,76 @@ class CoursesScreen extends React.Component {
         const new_lecture_loading = this.props.new_lecture_loading
         const new_lecture_error = this.props.new_lecture_error
 
-        //console.log("schedules = ", schedules, "loading =", schedules_loading, " error =", schedules_error)
-        //console.log("codes = ", codes, "loading =", codes_loading, "error =", codes_error)
-        //console.log("lecture_id = ", lecture_id, "new_lecture_loading =", new_lecture_loading, "new_lecture_error =", new_lecture_error)
-        //console.log(lecture_id && !new_lecture_loading && !new_lecture_error)
-
-        if (lecture_id&&!new_lecture_loading&&!new_lecture_error)  // if new lectue are opened go to its screen 
+        if (lecture_id && !new_lecture_loading && !new_lecture_error)  // if new lectue are opened go to its screen 
         {
-            this.props.navigation.navigate('ProfSession',{lecture_id:lecture_id})
+            this.props.navigation.navigate('ProfSession', { lecture_id: lecture_id })
         }
 
-        if (new_lecture_error)
-        {
+        if (new_lecture_error) {
             Alert.alert('Error !!!', "there is something went wrong during the creation of the lecture", [
                 { text: 'Ok' }])
         }
         if (codes_error || schedules_error) {
-            console.log(`codes_error=${codes_error}, schedules_error=${schedules_error}`)
-            return (
-                <Image style={styles.Image} source={require('../../images/error_state.jpg')}>
-                </Image>
-            )
+            console.log(`coderrorView userMessage="can't loads_error=${codes_error}, schedules_error=${schedules_error}`)
+            Alert.alert('Error !!!', "can't load proper data", [
+                { text: 'ok' }])
+            // return (
+            //     <Image style={styles.Image} source={require('../../images/error_state.jpg')}>
+            //     </Image>
+            // )
         }
         if (codes_loading || new_lecture_loading) {
-            return (
-                <View style={styles.LoadingContainer}>
-                    <Text style={styles.headline}>  Loading... </Text>
-                    <ActivityIndicator size="large" color="#0000ff" />
-                </View>
-            )
+            return (<AppLoadingIndicator />)
         }
 
         return (
-            <View style={styles.MainContainer}>
+            <Container >
+                <Header style={{marginTop: Constants.statusBarHeight}}>
+                    <Body>
+                        <Title>Lecture Attendance</Title>
+                    </Body>
+                    <Right>
+                        <ButtonNativeBase onPress={this._openMyLectures}>
+                            {/* <IconNativeBase name='dots-vertical' type='MaterialCommunityIcons' /> */}
+                            <TextNativeBase> my lectures</TextNativeBase>
+                        </ButtonNativeBase>
+                    </Right>
+                </Header>
+                <Content >
+                    <View style={styles.MainContainer}>
+                        <Card containerStyle={styles.PickerContainer} >
+                            <Picker
+                                selectedValue={this.state.code_holder}
+                                onValueChange={this.UpdateSelectedCode} >
+                                {this.loadcodes(codes)}
+                            </Picker>
 
-                <Card containerStyle={styles.PickerContainer} >
-                    <Picker
-                        selectedValue={this.state.code_holder}
-                        onValueChange={this.UpdateSelectedCode} >
-                        {this.loadcodes(codes)}
-                    </Picker>
+                            <Picker
+                                selectedValue={this.state.tutorial_type_holder}
+                                onValueChange={this.UpdateSelectedTurorialType} >
+                                {this.loadTutorialsTypes()}
+                            </Picker>
 
-                    <Picker
-                        selectedValue={this.state.tutorial_type_holder}
-                        onValueChange={this.UpdateSelectedTurorialType} >
-                        {this.loadTutorialsTypes()}
-                    </Picker>
+                            <Button
+                                title='Search'
+                                onPress={() => this._getSchedules()}
+                            />
+                        </Card>
 
-                    <Button
-                        title='BUTTON WITH ICON COMPONENT'
-                        onPress={() => this._getSchedules()}
-                    />
-                </Card>
+                        {this.schedulesRender(schedules, schedules_loading)}
+                    </View>
+                </Content>
 
-                {this.schedulesRender(schedules, schedules_loading)}
-            </View>
+            </Container>
+
+
         )
     }
 }
 
 /// for every asyncronous action there is three variable
-// 1- the result of the action 
-//2- flag indicates error 
+// 1- the result of the action
+//2- flag indicates error
 //3- flag indicates the action is running or not
 
 const mapStateToProps = state => ({
@@ -207,7 +223,7 @@ const mapDispatchToProps = {
 export default connect(mapStateToProps, mapDispatchToProps)(CoursesScreen)
 //////////////////////////////////////////////////////////////////////////////////////////////
 
-////// StyleSheet for Courses Screen 
+////// StyleSheet for Courses Screen
 const styles = StyleSheet.create({
     MainContainer:
     {

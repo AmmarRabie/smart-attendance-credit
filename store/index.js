@@ -9,7 +9,9 @@ import LectureReducer from '../features/prof_created_lectures/reducers';
 
 import openNewLecture from '../features/courses_available/newLecture_reducer';
 import submitAttendanceReducer from '../features/attendance_prof/reducer_submitAttendance';
-
+import changeStudentAttendanceReducer from '../features/lecture_attendance/change_attendance_reducer' 
+import getOPenLecturesReducer from '../features/open_lectures/Reducers'
+import checkAttendanceStatusReducer from '../features/lecture_attendance/check_attendance_status_reducer'
 
 import thunk from 'redux-thunk';
 
@@ -25,6 +27,11 @@ export const reducers = combineReducers({
     }),
     lectures: LectureReducer,
     openNewLec: openNewLecture,
+    studentAttendance:changeStudentAttendanceReducer,
+    openLectures:getOPenLecturesReducer,
+    checkAttendacneStatus:checkAttendanceStatusReducer,
 })
 
 export default store = createStore(reducers, applyMiddleware(thunk));
+
+export const getStoreToken = () => store.getState().auth.userData.token

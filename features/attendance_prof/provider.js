@@ -1,10 +1,12 @@
 import CONFIG from "../../config.json";
+import { getStoreToken as getUserToken } from '../../store'
 
 export const changeLectureAttendanceStatus = async (lectureId, status) => {
     const url = `http://${CONFIG.server_ip}/changeStatus/${lectureId}/${Number(status)}`
     console.log(url)
     const response = await fetch(url, {
         method: 'POST',
+        headers: { 'x-access-token': getUserToken() }
     })
 
     if (response.status === 200) {
@@ -21,6 +23,7 @@ export const submitAttendance = async (lectureId) => {
     console.log(url)
     const response = await fetch(url, {
         method: 'POST',
+        headers: { 'x-access-token': getUserToken() }
     })
 
     if (response.status === 200) {

@@ -5,34 +5,34 @@ import {
 import { createStackNavigator, createSwitchNavigator } from 'react-navigation'
 import store from './store'
 import { Provider } from 'react-redux';
-
+import {AppLoading} from 'expo'
 import AuthScreen from './features/auth'
 import CoursesScreen from './features/courses_available';
-import StudentAttendanceScreen from './features/attendance_student';
 import ProfAttendanceScreen from './features/attendance_prof';
+import OpenLecturesScreen from './features/open_lectures';
+import LectureAttendanceScreen from './features/lecture_attendance';
+import ProfCreatedLecturesScreen from './features/prof_created_lectures'
+import { Root } from 'native-base';
 
 const ProfAppNavigator = createStackNavigator(
   {
     Courses: CoursesScreen,
-    ProfSession: ProfAttendanceScreen, // in future this should be something like tab navigator
+    ProfSession: ProfAttendanceScreen,
+    MyLectures: ProfCreatedLecturesScreen,
   },
   {
     initialRouteName: 'Courses',
-    navigationOptions: {
-      headerTintColor: '#a41034',
-      headerStyle: {
-        backgroundColor: '#fff',
-      },
-    },
+    headerMode: 'none',
   }
 );
 
 const StdAppNavigator = createStackNavigator(
   {
-    StudentSession: StudentAttendanceScreen, // in future this should be something like tab navigator
+    openLectures: OpenLecturesScreen, // in future this should be something like tab navigator
+    lectureAttendance:LectureAttendanceScreen,
   },
   {
-    initialRouteName: 'StudentSession',
+    initialRouteName: 'openLectures',
     navigationOptions: {
       headerTintColor: '#a41034',
       headerStyle: {
@@ -51,15 +51,34 @@ const AppNavigator = createSwitchNavigator(
     Courses: CoursesScreen
   },
   {
-    initialRouteName: 'ProfApp',
+    initialRouteName: 'Auth',
   }
 );
 
 export default class App extends React.Component {
+  state = {
+    isReady: false
+  }
+  async componentWillMount() {
+    await Expo.Font.loadAsync({
+      // Roboto: require("native-base/Fonts/Roboto.ttf"),
+      Roboto_medium: require("native-base/Fonts/Roboto_medium.ttf"),
+      Ionicons: require("@expo/vector-icons/fonts/Ionicons.ttf"),
+      MaterialCommunityIcons: require("@expo/vector-icons/fonts/MaterialCommunityIcons.ttf"),
+      // awesome:require('custom-fonts/fa.ttf'),
+    });
+    this.setState({ isReady: true });
+  }
+
   render() {
+    if (!this.state.isReady) {
+      return <AppLoading />;
+    }
     return (
       <Provider store={store}>
-        <AppNavigator />
+        <Root>
+          <AppNavigator />
+        </Root>
       </Provider>
     );
   }
