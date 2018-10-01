@@ -1,4 +1,4 @@
-from App import db
+from app import db
 from datetime import datetime
 
 # schedule = course => refer to the slot in the faculty table like 'lecture math at wednesday'

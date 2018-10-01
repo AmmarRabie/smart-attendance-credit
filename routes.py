@@ -2,15 +2,16 @@ import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
 
 import requests
+import api_request as API
 from dicttoxml import dicttoxml as xmlify
 from flask import jsonify, request
 from jwt import encode as jwtEncode
 from xmltodict import parse as xmltodic
 from sqlalchemy import desc
-from App import app, db
+from app import app, db
 from config import app_secret_key
 from helpers import (buildUrlWithParams, filterCode, filterWithChild,
-                      formatAttendanceFromDic, isFacultyUser)
+                     formatAttendanceFromDic, isFacultyUser)
 from models import Lecture, StdAttendance
 from wrappers import user_token_available, userRequired, userRequiredJson
 
@@ -56,13 +57,9 @@ def getCoursesAvailable(prof):
     sessionType = request.args.get('type')
 
     # get all schedules data
-    try:
-        r = requests.get('http://std.eng.cu.edu.eg/schedules.aspx/?s=0')
-    except requests.exceptions.ConnectionError as error:
-        return 'exception', {'msg': 'server is down now, try again later', 'detail': str(error)}, 200
-    except:
-        return 'offfff'
-    root = ET.fromstring(r.text)
+    root, error = API.getAllSchedules()
+    if(error):
+        return 'err', error, 500
 
     # filter using parameters
     filterCode(root, code)
@@ -71,8 +68,6 @@ def getCoursesAvailable(prof):
     filterWithChild(root, 'BeginTime', beginTime)
     filterWithChild(root, 'EndTime', endTime)
 
-    # log the size
-    print("len of schedules returned: ", len(root.getchildren()))
     resultList = xmltodic(ET.tostring(root).decode())['AllSchedules']
     resultList = resultList['Schedule'] if resultList != None else []
     return resultList if type(resultList) is list else [resultList]
@@ -81,12 +76,9 @@ def getCoursesAvailable(prof):
 @routeJsonAndXml('/codes.{}', root='codes')
 @userRequired()
 def getAllCodes(user):
-    try:
-        r = requests.get('http://std.eng.cu.edu.eg/schedules.aspx/?s=0')
-    except requests.exceptions.ConnectionError as error:
-        return 'exception', {'msg': 'server is down now, try again later', 'detail': str(error)}, 200
-    print('at getAllCodes: data received from api')
-    allData = ET.fromstring(r.text)
+    allData, error = API.getAllSchedules()
+    if (error):
+        return 'err', error, 500
     uniqueCodes = []
     for schedule in allData:
         codeElement = schedule.find('Code')
@@ -113,15 +105,10 @@ def getLectureInfo(prof, lecture_id):
             attendanceList.append(str(att.student_id))
 
     studentAttendanceData = []
-    url = 'http://std.eng.cu.edu.eg/schedules.aspx/?s={}'.format(
-        lecture.schedule_id)
-    print('fetching from: %r' % url)
-    try:
-        r = requests.get(url)
-    except requests.exceptions.ConnectionError as error:
-        return 'exception', {'msg': 'server is down now, try again later', 'detail': str(error)}, 200
-    print('return from: %r' % url)
-    root = ET.fromstring(r.text)
+    root, error = API.getScheduleStudents(lecture.schedule_id)
+    if (error):
+        return 'err', error, 500
+
     # for every student in this schedule find if it attend or not
     for student in root.findall('Student'):
         currentId = student.find('StdCode').text
@@ -134,11 +121,41 @@ def getLectureInfo(prof, lecture_id):
     lectureInfo['att'] = studentAttendanceData
     return lectureInfo
 
+def getLectureInfo_base(prof, lecture_id):
+    lecture = Lecture.query.filter_by(id=lecture_id).first()
+    if (not lecture):
+        return 'err', 'no such lecture', 404  # root, result, status
+    # find lecture attendance
+    attendance = lecture.attendance
+    attendanceList = []
+    for att in attendance:
+        if (att.isAttend):
+            attendanceList.append(str(att.student_id))
+
+    studentAttendanceData = []
+    root, error = API.getScheduleStudents(lecture.schedule_id)
+    if (error):
+        return 'err', error, 500
+
+    # for every student in this schedule find if it attend or not
+    for student in root.findall('Student'):
+        currentId = student.find('StdCode').text
+        studentAttendanceData.append({
+            'id': currentId,
+            'name': student.find('StdNameArabic').text,
+            'attend': currentId in attendanceList
+        })
+    lectureInfo = lecture.as_dict()
+    lectureInfo['att'] = studentAttendanceData
+    return lectureInfo
 
 @app.route('/lecture/new/<schedule_id>', methods=['post'])
 @userRequiredJson('prof')
 def insertLecture(prof, schedule_id):
     # should validate here the schedule id, but it requires fetching large data to only validate
+    root, error = API.getSchedule(schedule_id, prof['id'],prof['password'])
+    if (error):
+        return jsonify({'err': error, 'cause': 'may be server is down or schedule id is not valid'})
     newL = Lecture(schedule_id=schedule_id,
                    attendanceStatusOpen=False, owner_id=prof['id'])
     db.session.add(newL)
@@ -161,7 +178,7 @@ def changeLectureStatus(prof, lecture_id, status):
     return jsonify({'mes': 'lecture updated successfully'}), 200
 
 
-@app.route('/attendance/<student_id>/<lecture_id>/<isAttend>')
+@app.route('/attendance/<student_id>/<lecture_id>/<isAttend>', methods=['post'])
 @userRequiredJson('any')
 def changeStdAttendance(user, student_id, lecture_id, isAttend):
     if (student_id == '0'):
@@ -185,15 +202,10 @@ def changeStdAttendance(user, student_id, lecture_id, isAttend):
             db.session.commit()
             return jsonify({'mes': 'attendance updated successfully'}), 200
 
-    url = 'http://std.eng.cu.edu.eg/schedules.aspx/?s={}'.format(
-        lecture.schedule_id)
-    print('fetching from: %r' % url)
-    try:
-        r = requests.get(url)
-    except requests.exceptions.ConnectionError as error:
-        return 'exception', {'msg': 'server is down now, try again later', 'detail': str(error)}, 200
-    print('return from: %r' % url)
-    root = ET.fromstring(r.text)
+    root, error = API.getScheduleStudents(lecture.schedule_id)
+    if (error):
+        return jsonify({'err': error}), 500
+
     # for every student in this schedule find if it attend or not
     for student in root.findall('Student'):
         currentId = student.find('StdCode').text
@@ -210,33 +222,21 @@ def changeStdAttendance(user, student_id, lecture_id, isAttend):
 @app.route('/submit/<lecture_id>', methods=['post'])
 @userRequiredJson('prof')
 def submitLectureAttendance(prof, lecture_id):
-    lecture = getLectureInfo(prof, lecture_id)
+    print('submitLectureAttendance')
+    print('prof is ')
+    print(prof)
+    lecture = getLectureInfo_base(prof, lecture_id)
     if (type(lecture) is tuple):  # there is an error ocurred
         return jsonify({'err': lecture[1]}), lecture[2]
 
     if (not prof['id'] == lecture['owner_id']):
         return jsonify({'err': 'owner only can submit the attendance'}), 403
-    # build request data
-    url = 'http://chws.eng.cu.edu.eg/webservice1.asmx?op=GetData'
-    contentType = 'application/soap+xml; charset=utf-8'
-    attendanceDataFormated = formatAttendanceFromDic(lecture.get('att'))
-    body = '''<?xml version="1.0" encoding="utf-8"?>
-    <soap12:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">
-    <soap12:Body>
-        <GetData xmlns="http://tempuri.org/">
-        <Params_CommaSeparated>{0},{1},17,{2};{3}</Params_CommaSeparated>
-        </GetData>
-    </soap12:Body>
-    </soap12:Envelope>
-    '''.format(prof['id'], prof['password'], lecture.get('schedule_id'), attendanceDataFormated)
 
-    # try to make the request
-    try:
-        r = requests.post(url, data=body, headers={
-                          'Content-Type': contentType})
-    except requests.exceptions.ConnectionError as error:
-        return 'exception', {'msg': 'server is down now, try again later', 'detail': str(error)}, 200
-    if (not r.ok):
+    attendanceDataFormated = formatAttendanceFromDic(lecture.get('att'))
+    ok = API.submitLectureAttendance(prof['id'], prof['password'], lecture.get(
+        'schedule_id'), attendanceDataFormated)
+
+    if (not ok):
         return jsonify({'err': 'can not submit the attendance'}), 400
 
     # deleting the submitted lecture
@@ -250,24 +250,24 @@ def submitLectureAttendance(prof, lecture_id):
 @routeJsonAndXml('/std/lectures.{}', root='lectures')
 @userRequired('std')
 def getStdAvailableLectures(std):
-    openLectures = Lecture.query.filter_by(attendanceStatusOpen=True)
+    openLectures = Lecture.query.filter_by(attendanceStatusOpen=True) # [TODO]: should i retrieve only opened one or all
     lectures = []
+    ids = []
     for lecture in openLectures:
-        print('[Lecture]: ')
-        print(lecture.id)
-        # [TODO]: may be more than lecture have the same schedule id!!, it shouldn't be only one open
-        try:
-            r = requests.get(
-                'http://std.eng.cu.edu.eg/schedules.aspx/?s={}'.format(lecture.schedule_id))
-        except requests.exceptions.ConnectionError as error:
-            return 'exception', {'msg': 'server is down now, try again later', 'detail': str(error)}, 200
-        root = ET.fromstring(r.text)
-        for student in root.findall('Student'):
-            if (student.find('StdCode').text != std['id']):
-                continue
+        print("[Lecture]: {}".format(lecture.id))
+        root, error = API.getScheduleStudents(lecture.schedule_id)
+        if(error):
+            return 'err', error, 500
+
+        if (lecture.schedule_id in ids): # optimization
             lectures.append(lecture.as_dict())
+            continue
+            
+        for student in root.findall('Student'):
+            if (student.find('StdCode').text == std['id']):
+                lectures.append(lecture.as_dict())
             # uncomment break if you want only first lecture
-            # break
+                # break here from 2 loops
     return lectures
 
 
@@ -284,6 +284,7 @@ def getProfLectures(prof):
         lectures.append(curr)
     return lectures
 
+
 @app.route('/lecture/<lecture_id>/status')
 @userRequiredJson()
 def getLectureAttendanceStatus(user, lecture_id):
@@ -291,6 +292,7 @@ def getLectureAttendanceStatus(user, lecture_id):
     if (not lecture):
         return jsonify({'err': 'no such lecture'}), 404
     return jsonify({'status': lecture.attendanceStatusOpen})
+
 
 @app.route('/login')
 def login():

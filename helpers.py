@@ -7,12 +7,10 @@ def filterCode(root, codeValue):
             root.remove(child)
 
 def filterWithChild(root, key, value):
-    print('filterWithChild')
     if (value is None or value.strip() == ''): return
     for child in root.findall('Schedule'):
         if (not (child.find(key).text.strip() == value)):
             root.remove(child)
-    print(root.getchildren().__len__())
 
 def formatAttendanceFromDic(attendance):
     formatedString = ''
