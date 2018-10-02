@@ -11,7 +11,7 @@ from sqlalchemy import desc
 from app import app, db
 from config import app_secret_key
 from helpers import (buildUrlWithParams, filterCode, filterWithChild,
-                     formatAttendanceFromDic, isFacultyUser)
+                     formatAttendanceFromDic, isFacultyUser, getScheduleDic)
 from models import Lecture, StdAttendance
 from wrappers import user_token_available, userRequired, userRequiredJson
 
@@ -121,6 +121,7 @@ def getLectureInfo(prof, lecture_id):
     lectureInfo['att'] = studentAttendanceData
     return lectureInfo
 
+
 def getLectureInfo_base(prof, lecture_id):
     lecture = Lecture.query.filter_by(id=lecture_id).first()
     if (not lecture):
@@ -149,11 +150,12 @@ def getLectureInfo_base(prof, lecture_id):
     lectureInfo['att'] = studentAttendanceData
     return lectureInfo
 
+
 @app.route('/lecture/new/<schedule_id>', methods=['post'])
 @userRequiredJson('prof')
 def insertLecture(prof, schedule_id):
     # should validate here the schedule id, but it requires fetching large data to only validate
-    root, error = API.getSchedule(schedule_id, prof['id'],prof['password'])
+    root, error = API.getSchedule(schedule_id, prof['id'], prof['password'])
     if (error):
         return jsonify({'err': error, 'cause': 'may be server is down or schedule id is not valid'})
     newL = Lecture(schedule_id=schedule_id,
@@ -222,9 +224,6 @@ def changeStdAttendance(user, student_id, lecture_id, isAttend):
 @app.route('/submit/<lecture_id>', methods=['post'])
 @userRequiredJson('prof')
 def submitLectureAttendance(prof, lecture_id):
-    print('submitLectureAttendance')
-    print('prof is ')
-    print(prof)
     lecture = getLectureInfo_base(prof, lecture_id)
     if (type(lecture) is tuple):  # there is an error ocurred
         return jsonify({'err': lecture[1]}), lecture[2]
@@ -250,22 +249,32 @@ def submitLectureAttendance(prof, lecture_id):
 @routeJsonAndXml('/std/lectures.{}', root='lectures')
 @userRequired('std')
 def getStdAvailableLectures(std):
-    openLectures = Lecture.query.filter_by(attendanceStatusOpen=True) # [TODO]: should i retrieve only opened one or all
+    # std['id'] = "1122325" for quick debug only
+    openLectures = Lecture.query.filter_by(attendanceStatusOpen=True).order_by(
+        desc(Lecture.time_created))  # [TODO]: should i retrieve only opened one or all
     lectures = []
-    ids = []
     for lecture in openLectures:
         print("[Lecture]: {}".format(lecture.id))
-        root, error = API.getScheduleStudents(lecture.schedule_id)
-        if(error):
-            return 'err', error, 500
+        studentsRoot, studentsError = API.getScheduleStudents(
+            lecture.schedule_id)
+        if(studentsError):
+            return 'err', studentsError, 500
 
-        if (lecture.schedule_id in ids): # optimization
-            lectures.append(lecture.as_dict())
-            continue
-            
-        for student in root.findall('Student'):
+        # if (lecture.schedule_id in ids): # optimization
+        #     lectures.append(lecture.as_dict())
+        #     continue
+
+        for student in studentsRoot.findall('Student'):
             if (student.find('StdCode').text == std['id']):
-                lectures.append(lecture.as_dict())
+                lectureInfo = lecture.as_dict()
+                root, error = API.getSchedule(
+                    lectureInfo['schedule_id'], std['id'], std['password'])
+                #root, error = API.getSchedule(lectureInfo['schedule_id'], 'testm', 'testm')
+                if(error):
+                    return 'err', error, 500
+                # merge two dictionaries
+                lectureInfo.update(getScheduleDic(root))
+                lectures.append(lectureInfo)
             # uncomment break if you want only first lecture
                 # break here from 2 loops
     return lectures

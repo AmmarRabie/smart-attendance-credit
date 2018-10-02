@@ -36,3 +36,7 @@ def isFacultyUser(xmlText):
         return True
     print('Not a user because: {}'.format(auth.get('Error_Msg')))
     return False
+
+
+def getScheduleDic(xmlRoot):
+    return jsonToDic(xmlRoot.text)['Timetable']["Day"][0]["Entry"][0]
