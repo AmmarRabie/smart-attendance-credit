@@ -105,7 +105,7 @@ export const postStudentAttendance = async (lecture_id, student_id, attendance) 
     const url = `http://${CONFIG.server_ip}/attendance/${encodeURIComponent(student_id)}/${encodeURIComponent(lecture_id)}/${encodeURIComponent(attendance_flag)}`
     console.log(url)
     const response = await fetch(url, {
-        method: 'GET',
+        method: 'POST',
         headers: { 'x-access-token': getUserToken() }
     })
 

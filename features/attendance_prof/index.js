@@ -2,7 +2,7 @@ import React from 'react'
 import { Text, Switch, Icon, Toast, Container, Header, Right, Left, Body, Title, Content, Button, Footer, FooterTab, ActionSheet } from 'native-base'
 import { Image, ActivityIndicator, View, StyleSheet, Alert } from 'react-native'
 import { connect } from 'react-redux'
-import { Card,Divider } from 'react-native-elements'
+import { Divider } from 'react-native-elements'
 
 import AttendanceList from '../../components/AttendanceList'
 import { GetLectureAttendance, changeStudentAttendance, changeLectureAttendance, submitAttendance } from './actions'

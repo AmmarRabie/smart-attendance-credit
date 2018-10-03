@@ -1,16 +1,20 @@
 import React from 'react'
-import {Image, ActivityIndicator, View, Text, StyleSheet } from 'react-native'
+import { View, StyleSheet } from 'react-native'
 import { connect } from 'react-redux'
-import { GetOpenLectures ,makeStudentAttend} from './Actions'
+import { GetOpenLectures, makeStudentAttend } from './Actions'
 import OpenLecturesList from '../../components/openLecturesList'
 import OfflineNotice from '../../components/offlineComponent'
 import { Constants } from 'expo';
+import AppLoadingIndicator from '../../components/AppLoadingIndicator';
+import { ErrorView } from '../../components/ErrorView';
+import EmptyResultView from '../../components/EmptyResultView';
+import { Container, Body, Title, Right, Button, Content, Header, Icon } from 'native-base';
 
 
 
 class OpenLecturesScreen extends React.Component {
     state = {
-        
+
     }
 
     componentWillMount() {
@@ -19,41 +23,31 @@ class OpenLecturesScreen extends React.Component {
 
     }
     componentWillReceiveProps(nextProps) {
-    //   console.log(nextProps.studentOpenLectures.lecture.id)  
-        if (nextProps.studentOpenLectures && nextProps.studentOpenLectures.length === 1)
-    {  console.log('receive props')
-                    this.props.navigation.navigate('lectureAttendance', { Lecture: nextProps.studentOpenLectures[0].id })
+        //   console.log(nextProps.studentOpenLectures.lecture.id)  
+        if (nextProps.studentOpenLectures && nextProps.studentOpenLectures.length === 1) {
+            const id = nextProps.studentOpenLectures[0].id
+            const name = nextProps.studentOpenLectures[0].Course_Name
+            this.navigateFunction(id, name)
+        }
+    }
 
-    }    
-}
-     _getLectures = (studentId) => {
-         this.props.GetOpenLectures(studentId)
+    _getLectures = () => {
+        this.props.GetOpenLectures()
     }
-    navigateFunction(id) {
-        console.log(id)
-        this.props.navigation.navigate('lectureAttendance', { Lecture: id })
+
+    navigateFunction(id, name) {
+        this.props.navigation.navigate('lectureAttendance', { Lecture: id, course_name: name })
     }
-    openLecturesRender(openLectures, Loading) {
-    console.log(`open Lectures Renderer  ${openLectures}`)
-        if (Loading) {
-            return (
-                <View style={styles.LoadingContainer}>
-                    <Text style={styles.headline}>  Loading... </Text>
-                    <ActivityIndicator size="large" color="#0000ff" />
-                </View>
-            )
-        }
-        else if (openLectures.length === 0) {
-            return (
-                <Image style={styles.Image} source={require('../../images/no_results_found.png')}>
-                </Image>
-            )
-        }
-        else {
-            return (
-                <OpenLecturesList marginTop={20} list={openLectures } onItemClick={(id)=>this.navigateFunction(id)}  />
-            )
-        }
+
+    openLecturesRender(openLectures, loading, error) {
+        if (loading) return <AppLoadingIndicator />
+        if (error) return <ErrorView onRetry={this._getLectures} />
+        if (openLectures.length === 0) return <EmptyResultView onRefresh={this._getLectures} userMessage={'you have no available lectures, my be the attendance is still closed'} />
+
+        return <OpenLecturesList
+            marginTop={20}
+            list={openLectures}
+            onItemClick={(id, name) => this.navigateFunction(id, name)} />
     }
 
 
@@ -61,23 +55,26 @@ class OpenLecturesScreen extends React.Component {
         const Lectures = this.props.studentOpenLectures
         const openLecturesError = this.props.studentOpenLecturesError
         const openLecturesLoading = this.props.studentOpenLecturesLoading
-        if (openLecturesError) {
-            console.warn(openLecturesError)
-            return (
-                <View>
-                    <View style={styles.statusBar} />
-                    <Image style={styles.Image} source={require('../../images/error_state.jpg')}>
-                    </Image>
-                </View>
-            )
-        }
 
         return (
-            <View style={styles.MainContainer}>
+            <Container>
                 <View style={styles.statusBar} />
-                <OfflineNotice style={{ height:100}}/>
-                {this.openLecturesRender(Lectures, openLecturesLoading)}
-            </View>
+                <Header>
+                    <Body>
+                        <Title>Available Lectures</Title>
+                    </Body>
+                    <Right>
+                        <Button onPress={this._getLectures}>
+                            <Icon name='refresh' type='MaterialCommunityIcons' />
+                        </Button>
+                    </Right>
+                </Header>
+                <Content>
+                    {/* <OfflineNotice style={{ height: 100 }} /> */}
+                    {this.openLecturesRender(Lectures, openLecturesLoading, openLecturesError)}
+
+                </Content>
+            </Container>
         )
     }
 
@@ -139,7 +136,7 @@ const styles = StyleSheet.create({
         height: null,
         resizeMode: 'stretch',
     },
-     statusBar: {
+    statusBar: {
         backgroundColor: "#000000",
         height: Constants.statusBarHeight,
     },

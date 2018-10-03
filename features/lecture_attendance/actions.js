@@ -30,8 +30,7 @@ export const makeStudentAttend=(LectureId)=> async dispatch=>{
         dispatch(attendStudentSuccess())
     }
     catch(error){
-        console.log(`erorr in make student attend: ${error}`)
-        dispatch(attendStudentFailure(error))
+        dispatch(attendStudentFailure(error.message))
     }
 }
 

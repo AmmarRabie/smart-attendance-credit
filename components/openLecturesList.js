@@ -17,11 +17,10 @@ export default class OpenLecturesList extends React.Component {
                     {
                         this.props.list.map((l) => (
                             <ListItem
-                                title={l.id}
+                                title={l.time_created}
                                 key={l.id}
-                                onPress={() => this.props.onItemClick(l.id)}
-                            />
-
+                                onPress={() => this.props.onItemClick(l.id, l.Course_Name)}
+                                subtitle={l.Course_Name}/>
                         ))
                     }
                 </List>

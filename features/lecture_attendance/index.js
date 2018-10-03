@@ -1,8 +1,9 @@
 import { makeStudentAttend, checkAttendanceStatus } from './actions'
 import React from 'react'
-import {  View, Text, StyleSheet, Button,ActivityIndicator, Alert } from 'react-native'
+import { StyleSheet, ActivityIndicator, Alert, View, Text, Button,Image } from 'react-native'
 import { connect } from 'react-redux'
-import OfflineNotice from '../../components/offlineComponent'
+import { Content, Title, Body, Header, Container } from 'native-base';
+import { Constants } from 'expo'
 
 class LectureAttendanceScreen extends React.Component {
     state = {
@@ -10,15 +11,14 @@ class LectureAttendanceScreen extends React.Component {
     }
 
     componentWillMount() {
-         this.props.checkAttendanceStatus(this.props.navigation.getParam('Lecture'))
+        this.props.checkAttendanceStatus(this.props.navigation.getParam('Lecture'))
     }
-    componentWillReceiveProps(nextprops){
-        if(this.props.studentAttendError!==null){
-            Alert.alert('Error',this.props.studentAttendError)
+    componentWillReceiveProps(nextprops) {
+        if (nextprops.studentAttendError) {
+            Alert.alert('Error',nextprops.studentAttendError, [{ text: 'Ok' }])
         }
-    
-
     }
+
     checkStatus = () => {
         this.setState({ attendanceStatus: this.props.checkAttendanceStatus(this.props.navigation.getParam('Lecture')) })
     }
@@ -37,7 +37,7 @@ class LectureAttendanceScreen extends React.Component {
         console.log(statusIsOpen)
         console.log(studnetIsAttend)
 
-        if (studentAttendError || statusError) {
+        if (statusError) {
             return (
                 <Image style={styles.Image} source={require('../../images/error_state.jpg')}>
                 </Image>
@@ -52,30 +52,44 @@ class LectureAttendanceScreen extends React.Component {
             )
         }
         return (
-            <View style={styles.MainContainer}>
-            <OfflineNotice/>
-                <View style={styles.HorizontalContainer} >
+            <Container >
+                <View style={styles.statusBar} />
+                <Header >
+                    <Body>
+                        <Title>{this.props.navigation.getParam('course_name')}</Title>
+                    </Body>
+                </Header>
+                <Content >
+                    <View style={styles.MainContainer}>
+                        {/* <OfflineNotice /> */}
+                        <View style={styles.HorizontalContainer} >
 
-                    <Text>Attendance Status: </Text>
-                    <Text> {statusIsOpen}</Text>
-                    <Button
-                        title="Check attendance!"
-                        onPress={() => this.checkStatus()} />
-                </View>
+                            <Text>Attendance Status: {statusIsOpen ? "open" : "closed"}</Text>
+                            <Button
+                                title="Check attendance!"
+                                onPress={() => this.checkStatus()} />
+                        </View>
+                        {this.renderTakeAttendanceBtn(statusIsOpen && !studnetIsAttend)}
+                        {this.renderMessageInfo()}
+                    </View>
+                </Content>
+            </Container>
+        )
+    }
 
-                {this.renderTakeAttendanceBtn(statusIsOpen && !studnetIsAttend)}
+    renderTakeAttendanceBtn(draw) {
+        if (!draw) return null
+        return (
+            <View style={styles.HorizontalContainer}>
+                <Text> Attendance: {this.props.isAttend}</Text>
+                <Button title='Take My Attendance' onPress={() => this.takeStudentAttendance()}></Button>
             </View>
         )
     }
 
-    renderTakeAttendanceBtn(draw){
-        if (!draw) return null
-        return (
-            <View  style={styles.HorizontalContainer}>
-            <Text> Attendance: {this.props.isAttend}</Text>
-            <Button title='Take My Attendance' onPress={() => this.takeStudentAttendance()}></Button>
-        </View>
-        )
+    renderMessageInfo() {
+        const message = this.props.studnetIsAttend ? "You are attended in this lecture" : "You are not attended"
+        return <Text> {message} </Text>
     }
 }
 
@@ -105,7 +119,7 @@ const styles = StyleSheet.create({
     }
     ,
     HorizontalContainer: {
-        
+
         flexDirection: 'row'
     },
     LoadingContainer: {
@@ -128,5 +142,9 @@ const styles = StyleSheet.create({
         width: null,
         height: null,
         resizeMode: 'stretch',
+    },
+    statusBar: {
+        backgroundColor: "#000000",
+        height: Constants.statusBarHeight,
     }
 })

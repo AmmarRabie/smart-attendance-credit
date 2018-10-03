@@ -10,8 +10,6 @@ openLecturesInitialState={
     error:null
 }
 
-const merge = (prev, next) => Object.assign({}, prev, next)
-
 const getOPenLecturesReducer=(state=openLecturesInitialState,action)=>{
     switch(action.type){
         case GET_OPEN_LECTURES_SENT:

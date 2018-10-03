@@ -8,7 +8,6 @@ export const ErrorView = (props) => {
         <View style={{
             flex: 1,
             flexDirection: 'column',
-            justifyContent: ''
         }}>
             <Image style={{
                 flex: 1,

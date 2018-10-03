@@ -32,7 +32,7 @@ class ProfLecturesScreen extends React.Component {
             )
         }
         return (
-            <LecturesList marginTop={20} list={lectures} onLectureClick={(id)=> this.props.navigation.navigate('',)}/>
+            <LecturesList marginTop={20} list={lectures} onLectureClick={(id)=> this.props.navigation.push('ProfSession',{lecture_id:id})}/>
         )
 
     }

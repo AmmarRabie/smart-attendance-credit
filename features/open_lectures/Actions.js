@@ -23,14 +23,15 @@ export const GetOpenLecturesFailure=(error)=>({
     payload:error
 })
 
-export const GetOpenLectures=(studentId)=>async dispatch=>{
+export const GetOpenLectures=()=>async dispatch=>{
     dispatch(getOpenLecturesSent())
     try{
-        const Lectures=await fetchStudentActiveLectures(studentId)
+        const Lectures=await fetchStudentActiveLectures()
         dispatch(GetOpenLecturesSuccess(Lectures))
 
     }
     catch(error){
+        print(`there is an error here GetOpenLectures Action ${error}`)
         dispatch(GetOpenLecturesFailure(error))
     }
 }

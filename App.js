@@ -4,8 +4,10 @@ import {
 } from 'react-native';
 import { createStackNavigator, createSwitchNavigator } from 'react-navigation'
 import store from './store'
+// import { persistor } from './store'
+// import { PersistGate } from 'redux-persist/integration/react'
 import { Provider } from 'react-redux';
-import {AppLoading} from 'expo'
+import { AppLoading } from 'expo'
 import AuthScreen from './features/auth'
 import CoursesScreen from './features/courses_available';
 import ProfAttendanceScreen from './features/attendance_prof';
@@ -29,16 +31,11 @@ const ProfAppNavigator = createStackNavigator(
 const StdAppNavigator = createStackNavigator(
   {
     openLectures: OpenLecturesScreen, // in future this should be something like tab navigator
-    lectureAttendance:LectureAttendanceScreen,
+    lectureAttendance: LectureAttendanceScreen,
   },
   {
     initialRouteName: 'openLectures',
-    navigationOptions: {
-      headerTintColor: '#a41034',
-      headerStyle: {
-        backgroundColor: '#fff',
-      },
-    },
+    headerMode: 'none',
   }
 );
 
@@ -48,7 +45,7 @@ const AppNavigator = createSwitchNavigator(
     Auth: AuthScreen,
     ProfApp: ProfAppNavigator,
     StdApp: StdAppNavigator,
-    Courses: CoursesScreen
+    Courses: CoursesScreen,
   },
   {
     initialRouteName: 'Auth',
@@ -76,9 +73,11 @@ export default class App extends React.Component {
     }
     return (
       <Provider store={store}>
-        <Root>
-          <AppNavigator />
-        </Root>
+        {/* <PersistGate loading={null} persistor={persistor}> */}
+          <Root>
+            <AppNavigator />
+          </Root>
+        {/* </PersistGate> */}
       </Provider>
     );
   }

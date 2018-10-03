@@ -14,6 +14,8 @@ import getOPenLecturesReducer from '../features/open_lectures/Reducers'
 import checkAttendanceStatusReducer from '../features/lecture_attendance/check_attendance_status_reducer'
 
 import thunk from 'redux-thunk';
+// import { persistStore, persistReducer } from 'redux-persist'
+import storage from 'redux-persist/lib/storage'
 
 export const reducers = combineReducers({
     auth: authReducer,
@@ -32,6 +34,15 @@ export const reducers = combineReducers({
     checkAttendacneStatus:checkAttendanceStatusReducer,
 })
 
+
+const persistConfig = {
+    key: 'root',
+    storage,
+    whitelist: ['auth']
+}
+// const persistedReducer = persistReducer(persistConfig, reducers)
+  
 export default store = createStore(reducers, applyMiddleware(thunk));
+// export const persistor = persistStore(store)
 
 export const getStoreToken = () => store.getState().auth.userData.token

@@ -12,13 +12,13 @@ export const attendStudent = async (lectureId) => {
         return
     }
 
-    const err = response.json()
+    const {err} = await response.json()
     console.log(err)
     throw new Error(err)
 }
 
 export const fetchLectureInfo = async (lectureId) => {
-    const url = `http:/${CONFIG.server_ip}/lecture.json/${lectureId}`
+    const url = `http:/${CONFIG.server_ip}/lecture/${lectureId}/status`
     console.log(url)
     const response = await fetch(url, {
         method: 'GET',
@@ -26,11 +26,10 @@ export const fetchLectureInfo = async (lectureId) => {
 
     })
     if (response.status == 200) {
-        const { lecture } = await response.json()
-        console.log(`api fetch ${lecture.status}`)
-        return lecture.status
+        const { status } = await response.json()
+        return status
     }
     const { err } = response.json()
     console.log(err)
-    throw new Error(err)
+    throw err
 }
