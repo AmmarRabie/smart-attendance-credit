@@ -12,4 +12,5 @@
 /Pipfile.lock
 /Pipfile
 /__pycache__/*
-./config.py
+
+/config.py
