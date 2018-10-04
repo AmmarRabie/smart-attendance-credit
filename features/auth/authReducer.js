@@ -1,11 +1,8 @@
-import { LOG_IN_FULFILLED, LOG_IN_REJECTED, LOG_IN_SENT } from './authActions'
+import {LOG_IN_FULFILLED, LOG_IN_REJECTED, LOG_IN_SENT} from './authActions'
 
-
-const merge = (prev, next) => Object.assign({}, prev, next)
-
-authInitialState = {
+const authInitialState = {
   loading: false,
-  loginErr: null
+  loginErr: null,
 }
 
 const authReducer = (state = authInitialState, action) => {
