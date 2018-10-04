@@ -14,8 +14,8 @@ export const fetchLectures = async () => {
     console.log(lectures)
     return lectures // [TODO]: force it to be list even it is one item
   }
-  const {error} = response.json()
-  throw new Error(error)
+  const {err} = response.json()
+  throw new Error(err)
 }
 
 export default fetchLectures

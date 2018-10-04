@@ -36,7 +36,7 @@ export const GetCodes = () => async dispatch => {
     const codes = await fetchCodes()
     dispatch(getCodesSuccess(codes))
   } catch (error) {
-    dispatch(getCodesFailure(error))
+    dispatch(getCodesFailure(error.message))
   }
 }
 
@@ -63,7 +63,7 @@ export const GetWantedSchedules = (type, code) => async dispatch => {
     const schedules = await fetchSchedules(type, code)
     dispatch(GetWantedSchedulesSuccess(schedules))
   } catch (error) {
-    dispatch(GetWantedSchedulesFailure(error))
+    dispatch(GetWantedSchedulesFailure(error.message))
   }
 }
 
@@ -91,6 +91,6 @@ export const openNewLecture = scheduleId => async dispatch => {
     const LectureId = await openlecture(scheduleId)
     dispatch(openNewLectureSuccess(LectureId))
   } catch (error) {
-    dispatch(openNewLectureFailure(error))
+    dispatch(openNewLectureFailure(error.message))
   }
 }

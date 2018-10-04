@@ -26,7 +26,7 @@ export const GetOpenLectures = () => async dispatch => {
     const Lectures = await fetchStudentActiveLectures()
     dispatch(GetOpenLecturesSuccess(Lectures))
   } catch (error) {
-    print(`there is an error here GetOpenLectures Action ${error}`)
-    dispatch(GetOpenLecturesFailure(error))
+    print(`there is an error here GetOpenLectures Action ${error.message}`)
+    dispatch(GetOpenLecturesFailure(error.message))
   }
 }

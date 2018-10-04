@@ -35,8 +35,8 @@ export const fetchCodes = async () => {
     // codes.unshift(" Please choose department ");
     return codes
   }
-  const {error} = await response.text()
-  throw new Error(error)
+  const {err} = await response.text()
+  throw new Error(err)
 }
 
 export const fetchSchedules = async (type, code) => {
@@ -57,8 +57,8 @@ export const fetchSchedules = async (type, code) => {
     const {courses} = await response.json()
     return courses // [TODO]: force it to be list even it is one item
   }
-  const {error} = response.json()
-  throw new Error(error)
+  const {err} = response.json()
+  throw new Error(err)
 }
 
 export const fetchLectureAttendance = async lecture_id => {
@@ -77,8 +77,8 @@ export const fetchLectureAttendance = async lecture_id => {
     const {lecture} = await response.json()
     return lecture
   }
-  const {error} = response.json()
-  throw new Error(error)
+  const {err} = response.json()
+  throw new Error(err)
 }
 
 export const postStudentAttendance = async (lecture_id, student_id, attendance) => {
@@ -102,8 +102,8 @@ export const postStudentAttendance = async (lecture_id, student_id, attendance) 
 
     return obj // [TODO]: force it to be list even it is one item
   }
-  const {error} = response.json()
-  throw new Error(error)
+  const {err} = response.json()
+  throw new Error(err)
 }
 
 export const openlecture = async scheduleId => {
@@ -120,7 +120,7 @@ export const openlecture = async scheduleId => {
 
     return obj.id // [TODO]: force it to be list even it is one item
   }
-  const {error} = response.json()
+  const {err} = response.json()
 
-  throw new Error(error)
+  throw new Error(err)
 }

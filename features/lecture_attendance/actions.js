@@ -52,6 +52,6 @@ export const checkAttendanceStatus = LectureId => async dispatch => {
     const LectureStatus = await fetchLectureInfo(LectureId)
     dispatch(checkAttendanceStatusSuccess(LectureStatus))
   } catch (error) {
-    dispatch(checkAttendanceStatusFailure(error))
+    dispatch(checkAttendanceStatusFailure(error.message))
   }
 }

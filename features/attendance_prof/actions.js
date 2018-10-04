@@ -29,7 +29,7 @@ export const GetLectureAttendance = lectureId => async dispatch => {
     const lecture = await fetchLectureAttendance(lectureId)
     dispatch(dispatcher(GET_LECTURE_ATTENDANCE_SUCCESS, lecture))
   } catch (error) {
-    dispatch(getLectureAttendanceFailure(error))
+    dispatch(getLectureAttendanceFailure(error.message))
   }
 }
 
@@ -59,7 +59,7 @@ export const changeStudentAttendance = (lectureId, studentId, attendance) => asy
     const msg = await postStudentAttendance(lectureId, studentId, attendance)
     dispatch(changeStudentAttendanceSuccess(msg))
   } catch (error) {
-    dispatch(changeStudentAttendanceFailure(error))
+    dispatch(changeStudentAttendanceFailure(error.message))
   }
 }
 
@@ -78,7 +78,7 @@ export const changeLectureAttendance = (lectureId, status) => async dispatch => 
     const msg = await apiChangeStatus(lectureId, status)
     dispatch(dispatcher(CHANGE_LECTURE_ATTENDANCE_SUCCESS, status))
   } catch (error) {
-    dispatch(dispatcher(CHANGE_LECTURE_ATTENDANCE_FAILURE, error))
+    dispatch(dispatcher(CHANGE_LECTURE_ATTENDANCE_FAILURE, error.message))
   }
 }
 
@@ -90,6 +90,6 @@ export const submitAttendance = lectureId => async dispatch => {
     const msg = await apiSubmitAttendance(lectureId)
     dispatch(dispatcher(SUBMIT_ATTENDANCE_SUCCESS, msg))
   } catch (error) {
-    dispatch(dispatcher(SUBMIT_ATTENDANCE_FAILURE, error))
+    dispatch(dispatcher(SUBMIT_ATTENDANCE_FAILURE, error.message))
   }
 }
