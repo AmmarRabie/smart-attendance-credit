@@ -46,7 +46,7 @@ def userRequiredJson(role='any'):
         @user_token_available(role)
         def decorated(auth, *args, **kwargs):
             if(auth['error']):
-                return jsonify({'msg': auth['error'][0]}), auth['error'][1]
+                return jsonify({'err': auth['error'][0]}), auth['error'][1]
             return fn(auth['user'], *args, **kwargs)
         decorated.__name__ = "{}_{}".format(decorated.__name__, fn.__name__)
         return decorated
