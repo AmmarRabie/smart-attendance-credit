@@ -21,7 +21,9 @@ class ProfLecturesScreen extends React.Component {
   lecturesRender(lectures) {
     if (lectures === undefined) return null
     if (lectures.length === 0) {
-      return <Image style={styles.Image} source={require('../../images/no_results_found.png')} />
+      return (
+        <Image style={styles.Image} source={require('../../assets/images/no_results_found.png')} />
+      )
     }
     return (
       <LecturesList
@@ -41,7 +43,7 @@ class ProfLecturesScreen extends React.Component {
       return (
         <view>
           <View style={styles.statusBar} />
-          <Image style={styles.Image} source={require('../../images/error_state.jpg')} />
+          <Image style={styles.Image} source={require('../../assets/images/error_state.jpg')} />
         </view>
       )
     }

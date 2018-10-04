@@ -10,7 +10,7 @@ const LecturesList = props => {
         {props.list.map(l => (
           <ListItem
             roundAvatar
-            avatar={require('../images/university.png')}
+            avatar={require('../assets/images/university.png')}
             title={l.time_created}
             key={l.id}
             subtitle={

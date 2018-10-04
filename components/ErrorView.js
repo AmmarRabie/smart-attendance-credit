@@ -16,7 +16,7 @@ export const ErrorView = props => {
           flex: 1,
           resizeMode: 'stretch',
         }}
-        source={require('../images/error_state2.jpg')}
+        source={require('../assets/images/error_state2.jpg')}
       />
       <Text> {userMessage} </Text>
       {renderBtn(props.onRetry)}

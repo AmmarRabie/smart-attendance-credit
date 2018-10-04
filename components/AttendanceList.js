@@ -1,5 +1,5 @@
 import React from 'react'
-import {StyleSheet, Image} from 'react-native'
+import {StyleSheet} from 'react-native'
 import {List, ListItem, CheckBox, Left, Right, Text} from 'native-base'
 
 class AttendanceList extends React.Component {
@@ -23,10 +23,6 @@ class AttendanceList extends React.Component {
     this.setState(prevState => ({count: prevState.count + incrementValue}))
     this.props.onCountChange(this.state.count + incrementValue)
   }
-
-  checkedIcon = () => <Image source={require('../images/checked.png')} />
-
-  unCheckedIcon = () => <Image source={require('../images/unchecked.jpg')} />
 
   componentDidMount() {
     const count = this.props.list.reduce((acc, item) => (item.attend ? acc + 1 : acc), 0)

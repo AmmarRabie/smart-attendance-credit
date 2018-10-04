@@ -14,7 +14,7 @@ class SchedulesList extends React.Component {
           {this.props.list.map(l => (
             <ListItem
               roundAvatar
-              avatar={require('../images/university.png')}
+              avatar={require('../assets/images/university.png')}
               title={l.Name}
               key={l.key}
               onPress={() => this.props.onSchedulePress(l.scheduleID)}

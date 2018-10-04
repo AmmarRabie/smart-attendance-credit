@@ -93,7 +93,9 @@ class CoursesScreen extends React.Component {
       )
     }
     if (schedules.length === 0) {
-      return <Image style={styles.Image} source={require('../../images/no_results_found.png')} />
+      return (
+        <Image style={styles.Image} source={require('../../assets/images/no_results_found.png')} />
+      )
     }
 
     return (

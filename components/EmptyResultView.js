@@ -15,7 +15,7 @@ const EmptyResultView = props => (
         resizeMode: 'stretch',
         width: undefined,
       }}
-      source={require('../images/no_results_found.png')}
+      source={require('../assets/images/no_results_found.png')}
     />
   </View>
 )

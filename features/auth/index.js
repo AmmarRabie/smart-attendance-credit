@@ -62,7 +62,7 @@ class AuthScreen extends React.Component {
     return (
       <ImageBackground
         style={{flex: 1}}
-        source={require('../../images/lecture.jpg')}
+        source={require('../../assets/images/lecture.jpg')}
         resizeMode="cover"
         blurRadius={3}
       >

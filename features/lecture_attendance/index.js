@@ -51,7 +51,7 @@ class LectureAttendanceScreen extends React.Component {
     const {statusLoading} = this.props
 
     if (statusError) {
-      return <Image style={styles.Image} source={require('../../images/error_state.jpg')} />
+      return <Image style={styles.Image} source={require('../../assets/images/error_state.jpg')} />
     }
     if (studentAttendLoading || statusLoading) {
       return (

@@ -44,10 +44,10 @@ class ProfAttendanceScreen extends React.Component {
         {cancelable: false}
       )
     } else if (nextProps.submit_attendance_error) {
-      this.alert('info', nextProps.submit_attendance_error)
+      this.alert('error', nextProps.submit_attendance_error)
     }
 
-    const {changeStdAttMsg} = nextProps.change_std_att_msg
+    const {changeStdAttMsg} = nextProps
     const changeStdAttError = nextProps.change_std_att_error
     if (changeStdAttMsg) {
       Toast.show({
@@ -153,7 +153,9 @@ class ProfAttendanceScreen extends React.Component {
       )
     }
     if (attendanceList.length === 0) {
-      return <Image style={styles.Image} source={require('../../images/no_results_found.png')} />
+      return (
+        <Image style={styles.Image} source={require('../../assets/images/no_results_found.png')} />
+      )
     }
 
     return (
