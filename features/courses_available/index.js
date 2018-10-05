@@ -37,6 +37,35 @@ class CoursesScreen extends React.Component {
       this.setState({code_holder: nextProps.codes[0]})
       this.getSchedules(firstCode)
     }
+    if (
+      nextProps.lecture_id &&
+      this.props.lecture_id !== nextProps.lecture_id &&
+      !nextProps.new_lecture_loading &&
+      !nextProps.new_lecture_error
+    )
+      // if new lectue are opened go to its screen
+      this.props.navigation.navigate('ProfSession', {lecture_id: nextProps.lecture_id})
+  }
+
+  componentDidUpdate(prevProps) {
+    const {new_lecture_error} = prevProps
+    if (new_lecture_error) {
+      Alert.alert('Error !!!', new_lecture_error, [{text: 'Ok'}])
+    }
+
+    const {codes_error} = this.props
+    const {schedules_error} = this.props
+    if (codes_error && codes_error !== this.props.codes_error) {
+      console.log(`codes error userMessage="can't loads_error=${codes_error}`)
+      Alert.alert('Error !!!', `can't load codes because ${codes_error}`, [
+        {text: 'retry', onPress: () => this.getcodes()},
+      ])
+    }
+
+    if (schedules_error && schedules_error !== this.props.schedules_error) {
+      console.log(`codes error userMessage="can't loads_error=${schedules_error}`)
+      Alert.alert('Error !!!', `can't load codes because ${schedules_error}`, [{text: 'ok'}])
+    }
   }
 
   UpdateSelectedCode = itemValue => {
@@ -110,32 +139,10 @@ class CoursesScreen extends React.Component {
   // the main render function
   render() {
     const {codes_loading} = this.props
-    const {codes_error} = this.props
     const {schedules} = this.props
     const {schedules_loading} = this.props
-    const {schedules_error} = this.props
-
-    const {lecture_id} = this.props
     const {new_lecture_loading} = this.props
-    const {new_lecture_error} = this.props
 
-    if (lecture_id && !new_lecture_loading && !new_lecture_error)
-      // if new lectue are opened go to its screen
-      this.props.navigation.navigate('ProfSession', {lecture_id})
-
-    if (new_lecture_error) {
-      Alert.alert('Error !!!', 'there is something went wrong during the creation of the lecture', [
-        {text: 'Ok'},
-      ])
-    }
-    if (codes_error || schedules_error) {
-      console.log(
-        `coderrorView userMessage="can't loads_error=${codes_error}, schedules_error=${schedules_error}`
-      )
-      Alert.alert('Error !!!', "can't load proper data", [
-        {text: 'ok', onPress: () => this.getcodes()},
-      ])
-    }
     if (codes_loading || new_lecture_loading) {
       return <AppLoadingIndicator />
     }

@@ -4,25 +4,31 @@ import {connect} from 'react-redux'
 import {Content, Title, Body, Header, Container} from 'native-base'
 import {Constants} from 'expo'
 
-import {makeStudentAttend, checkAttendanceStatus} from './actions'
+import {makeStudentAttend, checkAttendanceStatus, checkStdAttendanceStatus} from './actions'
 
 class LectureAttendanceScreen extends React.Component {
   componentWillMount() {
     this.checkStatus()
+    this.props.checkStdAttendanceStatus(this.LectureId())
   }
 
+  LectureId = () => this.props.navigation.getParam('Lecture')
+
   componentWillReceiveProps(nextprops) {
-    if (nextprops.studentAttendError) {
+    if (
+      nextprops.studentAttendError &&
+      this.props.studentAttendError !== nextprops.studentAttendError
+    ) {
       Alert.alert('Error', nextprops.studentAttendError, [{text: 'Ok'}])
     }
   }
 
   checkStatus = () => {
-    this.props.checkAttendanceStatus(this.props.navigation.getParam('Lecture'))
+    this.props.checkAttendanceStatus(this.LectureId())
   }
 
   takeStudentAttendance() {
-    this.props.makeStudentAttend(this.props.navigation.getParam('Lecture'))
+    this.props.makeStudentAttend(this.LectureId())
     console.log(`takeStudentAttendance ${this.props.studnetIsAttend}`)
   }
 
@@ -96,6 +102,7 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = {
   makeStudentAttend,
   checkAttendanceStatus,
+  checkStdAttendanceStatus,
 }
 
 export default connect(

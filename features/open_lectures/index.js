@@ -16,12 +16,16 @@ class OpenLecturesScreen extends React.Component {
 
   componentWillMount() {
     console.log('open lectures screen will mount')
-    this.getLectures('1170406')
+    this.getLectures()
   }
 
   componentWillReceiveProps(nextProps) {
     //   console.log(nextProps.studentOpenLectures.lecture.id)
-    if (nextProps.studentOpenLectures && nextProps.studentOpenLectures.length === 1) {
+    if (
+      nextProps.studentOpenLectures && // there is a lecturers
+      nextProps.studentOpenLectures.length === 1 && // and there is only one
+      true // this.props.studentOpenLectures !== nextProps.studentOpenLectures // and that is the first time receiving the lectures
+    ) {
       const {id} = nextProps.studentOpenLectures[0]
       const name = nextProps.studentOpenLectures[0].Course_Name
       this.navigateFunction(id, name)

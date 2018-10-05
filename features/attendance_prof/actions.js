@@ -93,3 +93,7 @@ export const submitAttendance = lectureId => async dispatch => {
     dispatch(dispatcher(SUBMIT_ATTENDANCE_FAILURE, error.message))
   }
 }
+
+export const SUBMIT_ATTENDANCE_TOKEN = 'SUBMIT_ATTENDANCE_TOKEN'
+
+export const submitAttendanceToken = () => dispatcher(SUBMIT_ATTENDANCE_TOKEN, null)

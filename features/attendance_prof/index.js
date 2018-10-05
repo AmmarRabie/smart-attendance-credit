@@ -25,6 +25,7 @@ import {
   changeStudentAttendance,
   changeLectureAttendance,
   submitAttendance,
+  submitAttendanceToken,
 } from './actions'
 
 class ProfAttendanceScreen extends React.Component {
@@ -34,30 +35,27 @@ class ProfAttendanceScreen extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.attendance_list && this.state.all_student_count === undefined) {
+    console.log(`componentWillReceiveProps`)
+    // && this.state.all_student_count === undefined
+    if (nextProps.attendance_list && nextProps.attendance_list !== this.props.attendance_list) {
       this.setState({all_student_count: nextProps.attendance_list.length})
     } else if (nextProps.submit_attendance_message) {
+      this.props.submitAttendanceToken()
       Alert.alert(
         'info',
         nextProps.submit_attendance_message,
-        [{text: 'OK', onPress: () => this.props.navigation.pop()}],
+        [{text: 'OK', onPress: () => this.props.navigation.goBack()}],
         {cancelable: false}
       )
     } else if (nextProps.submit_attendance_error) {
       this.alert('error', nextProps.submit_attendance_error)
     }
 
-    const {changeStdAttMsg} = nextProps
     const changeStdAttError = nextProps.change_std_att_error
-    if (changeStdAttMsg) {
-      Toast.show({
-        text: 'attendance changed successfully',
-        type: 'success',
-      })
-    } else if (changeStdAttError) {
+    if (changeStdAttError) {
       Toast.show({
         text: "attendance doesn't change, try re-attend again or refresh",
-        type: 'warning',
+        type: 'danger',
       })
     }
   }
@@ -134,6 +132,7 @@ class ProfAttendanceScreen extends React.Component {
   }
 
   componentWillMount() {
+    console.log('component will mount called')
     const lectureId = this.props.navigation.getParam('lecture_id') // this.props.navigation.state.params.lecture_id;
     this.getLectureAttendance(lectureId)
   }
@@ -169,6 +168,7 @@ class ProfAttendanceScreen extends React.Component {
   }
 
   render() {
+    console.log('re render called')
     const attendanceList = this.props.attendance_list
     const getLectureAttendanceLoading = this.props.get_lecture_attendance_loading
     const getLectureAttendanceError = this.props.get_lecture_attendance_error
@@ -210,6 +210,10 @@ class ProfAttendanceScreen extends React.Component {
       </Container>
     )
   }
+
+  componentWillUnmount() {
+    console.log('component will unmount called')
+  }
 }
 
 const mapStateToProps = state => ({
@@ -231,6 +235,7 @@ const mapDispatchToProps = {
   changeStudentAttendance,
   changeLectureAttendance,
   submitAttendance,
+  submitAttendanceToken,
 }
 export default connect(
   mapStateToProps,

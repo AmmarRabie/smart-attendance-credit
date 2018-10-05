@@ -32,3 +32,19 @@ export const fetchLectureInfo = async lectureId => {
   console.log(err)
   throw err
 }
+
+export const getStdAttendanceStatus = async lectureId => {
+  const url = `http:/${CONFIG.server_ip}/std/${lectureId}/status`
+  console.log(url)
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {'x-access-token': getUserToken()},
+  })
+  if (response.status === 200) {
+    const {status} = await response.json()
+    return status
+  }
+  const {err} = response.json()
+  console.log(err)
+  throw err
+}

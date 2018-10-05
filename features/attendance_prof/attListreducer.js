@@ -7,7 +7,7 @@ import {
 } from './actions'
 
 const getLectureAttendanceInitialState = {
-  lecture: [],
+  lecture: {att: [], status: false},
   loading: true,
   error: null,
   ok: false,
@@ -25,7 +25,7 @@ const LectureAttendanceReducer = (state = getLectureAttendanceInitialState, acti
       return {
         ...state,
         loading: false,
-        lecture: action.payload,
+        lecture: {att: action.payload.att, status: action.payload.attendanceStatusOpen},
       }
     case GET_LECTURE_ATTENDANCE_FAILURE:
       return {

@@ -1,4 +1,8 @@
-import {SUBMIT_ATTENDANCE_SUCCESS, SUBMIT_ATTENDANCE_FAILURE} from './actions'
+import {
+  SUBMIT_ATTENDANCE_SUCCESS,
+  SUBMIT_ATTENDANCE_FAILURE,
+  SUBMIT_ATTENDANCE_TOKEN,
+} from './actions'
 
 const defaultInitialState = {
   message: undefined,
@@ -11,12 +15,15 @@ const submitAttendanceReducer = (state = defaultInitialState, action) => {
       return {
         ...state,
         message: action.payload,
+        error: undefined,
       }
     case SUBMIT_ATTENDANCE_FAILURE:
       return {
         ...state,
         error: action.payload,
       }
+    case SUBMIT_ATTENDANCE_TOKEN:
+      return defaultInitialState
     default:
       return state
   }

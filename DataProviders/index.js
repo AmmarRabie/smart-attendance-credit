@@ -75,6 +75,7 @@ export const fetchLectureAttendance = async lecture_id => {
     // also the component SchedulesList
     // important *************
     const {lecture} = await response.json()
+    lecture.att.sort((a, b) => (a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1))
     return lecture
   }
   const {err} = response.json()
