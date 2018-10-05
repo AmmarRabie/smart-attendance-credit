@@ -249,7 +249,7 @@ def submitLectureAttendance(prof, lecture_id):
 @routeJsonAndXml('/std/lectures.{}', root='lectures')
 @userRequired('std')
 def getStdAvailableLectures(std):
-    # std['id'] = "1122325" for quick debug only
+    # std['id'] = "1122325"  # for quick debug only
     openLectures = Lecture.query.filter_by(attendanceStatusOpen=True).order_by(
         desc(Lecture.time_created))  # [TODO]: should i retrieve only opened one or all
     lectures = []
@@ -269,7 +269,6 @@ def getStdAvailableLectures(std):
                 lectureInfo = lecture.as_dict()
                 root, error = API.getSchedule(
                     lectureInfo['schedule_id'], std['id'], std['password'])
-                #root, error = API.getSchedule(lectureInfo['schedule_id'], 'testm', 'testm')
                 if(error):
                     return 'err', error, 500
                 # merge two dictionaries
@@ -301,6 +300,20 @@ def getLectureAttendanceStatus(user, lecture_id):
     if (not lecture):
         return jsonify({'err': 'no such lecture'}), 404
     return jsonify({'status': lecture.attendanceStatusOpen})
+
+
+@app.route('/std/<lecture_id>/status')
+@userRequiredJson('std')
+def getStdAttendance(std, lecture_id):
+    lecture = Lecture.query.filter_by(id=lecture_id).first()
+    if (not lecture):
+        return jsonify({'err': 'no such lecture'}), 404
+    isAttend = False
+    for stdAttendance in lecture.attendance:
+        if(str(stdAttendance.student_id) == std['id'] and stdAttendance.isAttend == True):
+            isAttend = True
+            break
+    return jsonify({'status': isAttend})
 
 
 @app.route('/login')
