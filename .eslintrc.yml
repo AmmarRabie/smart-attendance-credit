@@ -1,0 +1,10 @@
+extends: kensho
+rules:
+    react/destructuring-assignment: [<enabled>, 'always']
+    react/no-deprecated: warn
+    react/prefer-stateless-function: warn
+    react/prop-types: warn
+    react/sort-comp: off
+    react/no-multi-comp: warn
+    no-use-before-define: warn
+    camelcase: warn

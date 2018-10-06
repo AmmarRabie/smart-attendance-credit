@@ -1,52 +1,36 @@
 import React from 'react'
-import { View, Text, StyleSheet, ScrollView } from 'react-native'
-import { List, ListItem } from 'react-native-elements'
+import {StyleSheet, ScrollView} from 'react-native'
+import {List, ListItem} from 'react-native-elements'
 
-export default class OpenLecturesList extends React.Component {
-    constructor(props) {
-        super(props)
-
-    }
-    static defaultProps = {
-        marginTop: 20,
-    }
-    render() {
-        return (
-            <ScrollView marginTop={this.props.marginTop} >
-                <List containerStyle={styles.ListContainer}>
-                    {
-                        this.props.list.map((l) => (
-                            <ListItem
-                                title={l.id}
-                                key={l.id}
-                                onPress={() => this.props.onItemClick(l.id)}
-                            />
-
-                        ))
-                    }
-                </List>
-            </ScrollView>
-        )
-
-    }
-
-}
+const OpenLecturesList = props => (
+  <ScrollView marginTop={props.marginTop || 20}>
+    <List containerStyle={styles.ListContainer}>
+      {props.list.map(l => (
+        <ListItem
+          title={l.time_created}
+          key={l.id}
+          onPress={() => props.onItemClick(l.id, l.Course_Name)}
+          subtitle={l.Course_Name}
+        />
+      ))}
+    </List>
+  </ScrollView>
+)
 const styles = StyleSheet.create({
-    ListContainer:
-    {
-        flex: 3,
-        justifyContent: 'flex-start',
-        backgroundColor: 'white'
-
-    },
-    subtitleView: {
-        flexDirection: 'row',
-        paddingLeft: 10,
-        paddingTop: 5
-    },
-    ratingText: {
-        paddingLeft: 10,
-        color: 'grey'
-    }
+  ListContainer: {
+    flex: 3,
+    justifyContent: 'flex-start',
+    backgroundColor: 'white',
+  },
+  subtitleView: {
+    flexDirection: 'row',
+    paddingLeft: 10,
+    paddingTop: 5,
+  },
+  ratingText: {
+    paddingLeft: 10,
+    color: 'grey',
+  },
 })
 
+export default OpenLecturesList

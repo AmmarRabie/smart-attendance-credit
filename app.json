@@ -1,5 +1,15 @@
 {
   "expo": {
-    "sdkVersion": "27.0.0"
+    "sdkVersion": "27.0.0",
+	"name": "credit-smart-attendance",
+    "icon": "./ic_launcher.png",
+    "version": "1.0.0",
+    "slug": "smart-attendance-credit",
+    "ios": {
+      "bundleIdentifier": "com.cufe.sac"
+    },
+    "android": {
+      "package": "com.cufe.sac"
+    }
   }
 }

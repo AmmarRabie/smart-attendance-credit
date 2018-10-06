@@ -1,136 +1,145 @@
 import React from 'react'
-import {Image, ActivityIndicator, View, Text, StyleSheet } from 'react-native'
-import { connect } from 'react-redux'
-import { GetOpenLectures ,makeStudentAttend} from './Actions'
-import OpenLecturesList from '../../components/openLecturesList'
-import OfflineNotice from '../../components/offlineComponent'
+import {View, StyleSheet} from 'react-native'
+import {connect} from 'react-redux'
+import {Constants} from 'expo'
+import {Container, Body, Title, Right, Button, Content, Header, Icon} from 'native-base'
 
+import OpenLecturesList from '../../components/openLecturesList'
+import AppLoadingIndicator from '../../components/AppLoadingIndicator'
+import {ErrorView} from '../../components/ErrorView'
+import EmptyResultView from '../../components/EmptyResultView'
+
+import {GetOpenLectures} from './Actions'
 
 class OpenLecturesScreen extends React.Component {
-    state = {
-        
+  state = {}
+
+  componentWillMount() {
+    console.log('open lectures screen will mount')
+    this.getLectures()
+  }
+
+  componentWillReceiveProps(nextProps) {
+    //   console.log(nextProps.studentOpenLectures.lecture.id)
+    if (
+      nextProps.studentOpenLectures && // there is a lecturers
+      nextProps.studentOpenLectures.length === 1 && // and there is only one
+      true // this.props.studentOpenLectures !== nextProps.studentOpenLectures // and that is the first time receiving the lectures
+    ) {
+      const {id} = nextProps.studentOpenLectures[0]
+      const name = nextProps.studentOpenLectures[0].Course_Name
+      this.navigateFunction(id, name)
     }
+  }
 
-    componentWillMount() {
-        console.log('open lectures screen will mount')
-        this._getLectures('1170406')
+  getLectures = () => {
+    this.props.GetOpenLectures()
+  }
 
-    }
-    componentWillReceiveProps(nextProps) {
-    //   console.log(nextProps.studentOpenLectures.lecture.id)  
-        if (nextProps.studentOpenLectures && nextProps.studentOpenLectures.length === 1)
-    {  console.log('receive props')
-                    this.props.navigation.navigate('lectureAttendance', { Lecture: nextProps.studentOpenLectures[0].id })
+  navigateFunction(id, name) {
+    this.props.navigation.navigate('lectureAttendance', {Lecture: id, course_name: name})
+  }
 
-    }    
-}
-     _getLectures = (studentId) => {
-         this.props.GetOpenLectures(studentId)
-    }
-    navigateFunction(id) {
-        console.log(id)
-        this.props.navigation.navigate('lectureAttendance', { Lecture: id })
-    }
-    openLecturesRender(openLectures, Loading) {
-    console.log(`open Lectures Renderer  ${openLectures}`)
-        if (Loading) {
-            return (
-                <View style={styles.LoadingContainer}>
-                    <Text style={styles.headline}>  Loading... </Text>
-                    <ActivityIndicator size="large" color="#0000ff" />
-                </View>
-            )
-        }
-        else if (openLectures.length === 0) {
-            return (
-                <Image style={styles.Image} source={require('../../images/no_results_found.png')}>
-                </Image>
-            )
-        }
-        else {
-            return (
-                <OpenLecturesList marginTop={20} list={openLectures } onItemClick={(id)=>this.navigateFunction(id)}  />
-            )
-        }
-    }
+  openLecturesRender(openLectures, loading, error) {
+    if (loading) return <AppLoadingIndicator />
+    if (error) return <ErrorView onRetry={this.getLectures} />
+    if (openLectures.length === 0)
+      return (
+        <EmptyResultView
+          onRefresh={this.getLectures}
+          userMessage="you have no available lectures, my be the attendance is still closed"
+        />
+      )
 
+    return (
+      <OpenLecturesList
+        marginTop={20}
+        list={openLectures}
+        onItemClick={(id, name) => this.navigateFunction(id, name)}
+      />
+    )
+  }
 
-    render() {
-        const Lectures = this.props.studentOpenLectures
-        const openLecturesError = this.props.studentOpenLecturesError
-        const openLecturesLoading = this.props.studentOpenLecturesLoading
-        if (openLecturesError) {
-            console.warn(openLecturesError)
-            return (
-                <Image style={styles.Image} source={require('../../images/error_state.jpg')}>
-                </Image>
-            )
-        }
+  render() {
+    const Lectures = this.props.studentOpenLectures
+    const openLecturesError = this.props.studentOpenLecturesError
+    const openLecturesLoading = this.props.studentOpenLecturesLoading
 
-        return (
-            <View style={styles.MainContainer}>
-                <OfflineNotice style={{ height:100}}/>
-                {this.openLecturesRender(Lectures, openLecturesLoading)}
-            </View>
-        )
-    }
-
-
+    return (
+      <Container>
+        <View style={styles.statusBar} />
+        <Header>
+          <Body>
+            <Title>Available Lectures</Title>
+          </Body>
+          <Right>
+            <Button onPress={this.getLectures}>
+              <Icon name="refresh" type="MaterialCommunityIcons" />
+            </Button>
+          </Right>
+        </Header>
+        <Content>
+          {/* <OfflineNotice style={{ height: 100 }} /> */}
+          {this.openLecturesRender(Lectures, openLecturesLoading, openLecturesError)}
+        </Content>
+      </Container>
+    )
+  }
 }
 const mapStateToProps = state => ({
-    studentOpenLectures: state.openLectures.Lectures,
-    studentOpenLecturesLoading: state.openLectures.loading,
-    studentOpenLecturesError: state.openLectures.error
-
+  studentOpenLectures: state.openLectures.Lectures,
+  studentOpenLecturesLoading: state.openLectures.loading,
+  studentOpenLecturesError: state.openLectures.error,
 })
 const mapDispatchToProps = {
-    GetOpenLectures,
-    makeStudentAttend
-
+  GetOpenLectures,
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(OpenLecturesScreen)
-////// StyleSheet for Courses Screen 
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(OpenLecturesScreen)
+// //// StyleSheet for Courses Screen
 const styles = StyleSheet.create({
-    MainContainer:
-    {
-        flex: 1,
-        flexDirection: 'column',
-        justifyContent: 'flex-start',
-        backgroundColor: '#EEEEEE',
-        //alignSelf:'baseline',
-    },
-    PickerContainer:
-    {
-        marginRight: 0,
-        marginLeft: 0,
-    },
-    ListContainer:
-    {
-        flex: 3,
-        justifyContent: 'flex-start',
-        backgroundColor: 'white'
-
-    },
-    LoadingContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        flexDirection: 'column',
-        alignItems: 'center',
-        backgroundColor: 'whitesmoke'
-    },
-    headline: {
-        textAlign: 'center',
-        fontWeight: 'bold',
-        fontSize: 18,
-        marginTop: 0,
-        width: 200,
-        textAlignVertical: "center"
-    },
-    Image: {
-        flex: 3,
-        width: null,
-        height: null,
-        resizeMode: 'stretch',
-    }
-});
+  MainContainer: {
+    flex: 1,
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
+    backgroundColor: '#EEEEEE',
+    // alignSelf:'baseline',
+  },
+  PickerContainer: {
+    marginRight: 0,
+    marginLeft: 0,
+  },
+  ListContainer: {
+    flex: 3,
+    justifyContent: 'flex-start',
+    backgroundColor: 'white',
+  },
+  LoadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    flexDirection: 'column',
+    alignItems: 'center',
+    backgroundColor: 'whitesmoke',
+  },
+  headline: {
+    textAlign: 'center',
+    fontWeight: 'bold',
+    fontSize: 18,
+    marginTop: 0,
+    width: 200,
+    textAlignVertical: 'center',
+  },
+  Image: {
+    flex: 3,
+    width: null,
+    height: null,
+    resizeMode: 'stretch',
+  },
+  statusBar: {
+    backgroundColor: '#000000',
+    height: Constants.statusBarHeight,
+  },
+})
