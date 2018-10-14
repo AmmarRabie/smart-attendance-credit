@@ -1,0 +1,3 @@
+rootProject.name = 'build_smart'
+
+include ':app'
