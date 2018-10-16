@@ -40,3 +40,8 @@ def isFacultyUser(xmlText):
 
 def getScheduleDic(xmlRoot):
     return jsonToDic(xmlRoot.text)['Timetable']["Day"][0]["Entry"][0]
+
+
+
+def validateSecret(secret):
+    return len(secret) > 4 and len(secret) < 10

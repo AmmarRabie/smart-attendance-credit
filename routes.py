@@ -10,8 +10,7 @@ from xmltodict import parse as xmltodic
 from sqlalchemy import desc
 from app import app, db
 from config import app_secret_key
-from helpers import (buildUrlWithParams, filterCode, filterWithChild,
-                     formatAttendanceFromDic, isFacultyUser, getScheduleDic)
+import helpers as hp
 from models import Lecture, StdAttendance
 from wrappers import user_token_available, userRequired, userRequiredJson
 
@@ -62,11 +61,11 @@ def getCoursesAvailable(prof):
         return 'err', error, 500
 
     # filter using parameters
-    filterCode(root, code)
-    filterWithChild(root, 'SessionType', sessionType)
-    filterWithChild(root, 'DayName', day)
-    filterWithChild(root, 'BeginTime', beginTime)
-    filterWithChild(root, 'EndTime', endTime)
+    hp.filterCode(root, code)
+    hp.filterWithChild(root, 'SessionType', sessionType)
+    hp.filterWithChild(root, 'DayName', day)
+    hp.filterWithChild(root, 'BeginTime', beginTime)
+    hp.filterWithChild(root, 'EndTime', endTime)
 
     resultList = xmltodic(ET.tostring(root).decode())['AllSchedules']
     resultList = resultList['Schedule'] if resultList != None else []
@@ -231,7 +230,7 @@ def submitLectureAttendance(prof, lecture_id):
     if (not prof['id'] == lecture['owner_id']):
         return jsonify({'err': 'owner only can submit the attendance'}), 403
 
-    attendanceDataFormated = formatAttendanceFromDic(lecture.get('att'))
+    attendanceDataFormated = hp.formatAttendanceFromDic(lecture.get('att'))
     ok = API.submitLectureAttendance(prof['id'], prof['password'], lecture.get(
         'schedule_id'), attendanceDataFormated)
 
@@ -272,7 +271,7 @@ def getStdAvailableLectures(std):
                 if(error):
                     return 'err', error, 500
                 # merge two dictionaries
-                lectureInfo.update(getScheduleDic(root))
+                lectureInfo.update(hp.getScheduleDic(root))
                 lectures.append(lectureInfo)
             # uncomment break if you want only first lecture
                 # break here from 2 loops
@@ -315,6 +314,34 @@ def getStdAttendance(std, lecture_id):
             break
     return jsonify({'status': isAttend})
 
+@app.route('/change_secret/<lecture_id>', methods=['POST'])
+@userRequiredJson('prof')
+def changeSecret(prof, lecture_id):
+    lecture = Lecture.query.filter_by(id=lecture_id).first()
+    if (not lecture):
+        return jsonify({'err': 'no such lecture'}), 404
+    if (prof['id'] != lecture.owner_id):
+        return jsonify({'err': 'Owner only can update the secret'}), 403
+
+    secret = request.headers['secret']
+    if (not secret):
+        return jsonify({'err': 'no secret provided'}), 400
+    if (not hp.validateSecret(secret)):
+        return jsonify({'err': 'not a valid secret'}), 400
+    lecture.secret = secret
+    db.session.commit()
+    return jsonify({'msg': 'secret changed successfully'})
+
+@app.route('/change_secret/<lecture_id>')
+@userRequiredJson('prof')
+def getSecret(prof, lecture_id):
+    lecture = Lecture.query.filter_by(id=lecture_id).first()
+    if (not lecture):
+        return jsonify({'err': 'no such lecture'}), 404
+    if (prof['id'] != lecture.owner_id):
+        return jsonify({'err': 'Owner only can see the secret'}), 403
+    return jsonify({'secret': lecture.secret})
+
 
 @app.route('/login')
 def login():
@@ -327,10 +354,10 @@ def login():
     password = auth.password
 
     try:
-        r = requests.get(buildUrlWithParams(userId, password, 0, 0))
+        r = requests.get(hp.buildUrlWithParams(userId, password, 0, 0))
     except requests.exceptions.ConnectionError as error:
         return 'exception', {'msg': 'server is down now, try again later', 'detail': str(error)}, 200
-    if(not isFacultyUser(r.text)):
+    if(not hp.isFacultyUser(r.text)):
         return jsonify({'err': 'incorrect id or password '}), 401
 
     role = ('std', 'prof')[not userId.isdigit()]

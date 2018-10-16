@@ -12,8 +12,11 @@ class Lecture(db.Model):
     attendanceStatusOpen = db.Column(db.Boolean, nullable=False)
     owner_id = db.Column(db.String(20)) # professor id (the owner)
     time_created = db.Column(db.DateTime(), default=datetime.now)
+    secret = db.Column(db.String(11), default='0000')
     def as_dict(self):
-        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+        all = {c.name: getattr(self, c.name) for c in self.__table__.columns}
+        del all['secret']
+        return all
     # def __repr__(self):
     #     return '<Lecture %r>' % self.attendanceStatusOpen
     
