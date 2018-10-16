@@ -1,5 +1,5 @@
 import React from 'react'
-import {Left, Icon, Input, Item, Body, ListItem} from 'native-base'
+import {Left, Icon, Input, Item, Body, ListItem, Right, Text} from 'native-base'
 
 export default class SecretComponent extends React.Component {
   state = {
@@ -17,8 +17,20 @@ export default class SecretComponent extends React.Component {
     return (
       <ListItem icon>
         <Left>
-          <Icon
-            name={this.state.change ? 'ios-add' : 'ios-appstore'}
+          <Text>Secret:</Text>
+        </Left>
+        <Body style={{borderBottomColor: 'transparent'}}>
+          <Item rounded disabled={!this.state.change}>
+            <Input
+              disabled={!this.state.change}
+              value={this.state.secret}
+              style={{color: 'grey'}}
+              onChangeText={text => this.setState({secret: text})}
+            />
+          </Item>
+        </Body>
+        <Right>
+          <Text
             onPress={() => {
               if (this.state.change) {
                 // save button clicked
@@ -27,43 +39,12 @@ export default class SecretComponent extends React.Component {
               }
               this.setState(prevState => ({change: !prevState.change}))
             }}
-          />
-        </Left>
-        <Body style={{borderBottomColor: 'transparent'}}>
-          <Item disabled={!this.state.change}>
-            <Input
-              disabled={!this.state.change}
-              value={`Secret: ${this.state.secret}`}
-              onChangeText={text => this.setState({secret: text.slice(8, text.length)})}
-            />
-          </Item>
-        </Body>
+          >
+            <Icon name={this.state.change ? 'add' : 'swap'} />
+            {this.state.change ? 'save' : 'change'}
+          </Text>
+        </Right>
       </ListItem>
-      // <Card>
-      //   <Left>
-      //     <Form>
-      //       <Item disabled={!this.state.change}>
-      //         <Input placeholder="Username" onChangeText={text => this.setState({ secret: text })} />
-      //       </Item>
-      //     </Form>
-      //     <Text>Secret: {this.state.secret}</Text>
-      //   </Left>
-      //   <Right>
-      //     <Button iconRight light>
-      //       <Text>{this.state.change ? 'save' : 'change'}</Text>
-      //       <Icon
-      //         name={this.state.change ? 'ios-add' : 'ios-appstore'}
-      //         onPress={() => {
-      //           if (this.state.change) {
-      //             // save button clicked
-      //             this.props.onSecretChange(this.state.secret)
-      //           }
-      //           this.setState(prevState => ({ change: !prevState.change }))
-      //         }}
-      //       />
-      //     </Button>
-      //   </Right>
-      // </Card>
     )
   }
 }
