@@ -3,6 +3,8 @@ import {fetchLectureAttendance, postStudentAttendance} from '../../DataProviders
 import {
   changeLectureAttendanceStatus as apiChangeStatus,
   submitAttendance as apiSubmitAttendance,
+  changeSecret as apiChangeSecret,
+  getLectureSecret as apiGetLectureSecret,
 } from './provider'
 
 export const GET_LECTURE_ATTENDANCE_BEGIN = 'GET_LECTURE_ATTENDANCE_BEGIN'
@@ -97,3 +99,26 @@ export const submitAttendance = lectureId => async dispatch => {
 export const SUBMIT_ATTENDANCE_TOKEN = 'SUBMIT_ATTENDANCE_TOKEN'
 
 export const submitAttendanceToken = () => dispatcher(SUBMIT_ATTENDANCE_TOKEN, null)
+
+export const CHANGE_SECRET_BEGIN = 'CHANGE_SECRET_BEGIN'
+export const CHANGE_SECRET_SUCCESS = 'CHANGE_SECRET_SUCCESS'
+export const CHANGE_SECRET_FAILED = 'CHANGE_SECRET_FAILED'
+export const changeSecret = (lectureId, newSecret) => async dispatch => {
+  dispatch(dispatcher(CHANGE_SECRET_BEGIN, null))
+  try {
+    const msg = await apiChangeSecret(lectureId, newSecret)
+    dispatch(dispatcher(CHANGE_SECRET_SUCCESS, newSecret))
+  } catch (error) {
+    dispatch(dispatcher(CHANGE_SECRET_FAILED, error.message))
+  }
+}
+
+export const GET_LECTURE_SECRET_SUCCESS = 'GET_LECTURE_SECRET_SUCCESS'
+export const getLectureSecret = lectureId => async dispatch => {
+  try {
+    const secret = await apiGetLectureSecret(lectureId)
+    dispatch(dispatcher(GET_LECTURE_SECRET_SUCCESS, secret))
+  } catch (error) {
+    console.log("can't get the current secret")
+  }
+}

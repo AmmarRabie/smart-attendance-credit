@@ -14,6 +14,7 @@ import submitAttendanceReducer from '../features/attendance_prof/reducer_submitA
 import changeStudentAttendanceReducer from '../features/lecture_attendance/change_attendance_reducer'
 import getOPenLecturesReducer from '../features/open_lectures/Reducers'
 import checkAttendanceStatusReducer from '../features/lecture_attendance/check_attendance_status_reducer'
+import SecretReducer from '../features/attendance_prof/reducer_secret';
 
 // import { persistStore, persistReducer } from 'redux-persist'
 
@@ -26,6 +27,7 @@ export const reducers = combineReducers({
     chngStuAtt: chngStudentAttendanceReducer,
     attendanceStatus: AttendanceStatusReducer,
     submitAttendance: submitAttendanceReducer,
+    secret: SecretReducer,
   }),
   lectures: LectureReducer,
   openNewLec: openNewLecture,

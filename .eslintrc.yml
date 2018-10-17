@@ -8,3 +8,4 @@ rules:
     react/no-multi-comp: warn
     no-use-before-define: warn
     camelcase: warn
+    linebreak-style: ["warn", "windows"]
