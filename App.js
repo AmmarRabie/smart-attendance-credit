@@ -21,7 +21,7 @@ const ProfAppNavigator = createStackNavigator(
     MyLectures: ProfCreatedLecturesScreen,
   },
   {
-    initialRouteName: 'MyLectures',
+    initialRouteName: 'Courses',
     headerMode: 'none',
   }
 )
