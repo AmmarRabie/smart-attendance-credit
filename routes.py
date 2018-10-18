@@ -350,7 +350,7 @@ def login():
     if not auth or not auth.username or not auth.password:
         return jsonify({'err': "you should enter username and password"}), 401
 
-    userId = auth.username
+    userId = auth.username.strip()
     password = auth.password
 
     try:
