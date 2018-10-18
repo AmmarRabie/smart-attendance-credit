@@ -332,7 +332,7 @@ def changeSecret(prof, lecture_id):
     db.session.commit()
     return jsonify({'msg': 'secret changed successfully'})
 
-@app.route('/change_secret/<lecture_id>')
+@app.route('/lecture_secret/<lecture_id>')
 @userRequiredJson('prof')
 def getSecret(prof, lecture_id):
     lecture = Lecture.query.filter_by(id=lecture_id).first()
