@@ -12,6 +12,7 @@ const authReducer = (state = authInitialState, action) => {
         ...state,
         loading: true,
         loginErr: null,
+        userData: null,
       }
     case LOG_IN_FULFILLED:
       return {
@@ -24,6 +25,12 @@ const authReducer = (state = authInitialState, action) => {
         ...state,
         loginErr: action.payload,
         loading: false,
+        userData: null,
+      }
+    case 'SIGN_OUT':
+      return {
+        ...state,
+        userData: null,
       }
     default:
       return state
