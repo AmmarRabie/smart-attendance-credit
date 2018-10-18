@@ -8,6 +8,7 @@ import OpenLecturesList from '../../components/openLecturesList'
 import AppLoadingIndicator from '../../components/AppLoadingIndicator'
 import {ErrorView} from '../../components/ErrorView'
 import EmptyResultView from '../../components/EmptyResultView'
+import signOut from '../signout'
 
 import {GetOpenLectures} from './Actions'
 
@@ -75,6 +76,9 @@ class OpenLecturesScreen extends React.Component {
           <Right>
             <Button onPress={this.getLectures}>
               <Icon name="refresh" type="MaterialCommunityIcons" />
+            </Button>
+            <Button onPress={() => signOut(this)}>
+              <Icon name="log-out" />
             </Button>
           </Right>
         </Header>

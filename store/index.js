@@ -1,6 +1,7 @@
 import {createStore, combineReducers, applyMiddleware} from 'redux'
 import thunk from 'redux-thunk'
-// import storage from 'redux-persist/lib/storage'
+import storage from 'redux-persist/lib/storage'
+import {persistStore, persistReducer} from 'redux-persist'
 
 import authReducer from '../features/auth/authReducer'
 import codesReducer from '../features/courses_available/codes_reducer'
@@ -14,9 +15,7 @@ import submitAttendanceReducer from '../features/attendance_prof/reducer_submitA
 import changeStudentAttendanceReducer from '../features/lecture_attendance/change_attendance_reducer'
 import getOPenLecturesReducer from '../features/open_lectures/Reducers'
 import checkAttendanceStatusReducer from '../features/lecture_attendance/check_attendance_status_reducer'
-import SecretReducer from '../features/attendance_prof/reducer_secret';
-
-// import { persistStore, persistReducer } from 'redux-persist'
+import SecretReducer from '../features/attendance_prof/reducer_secret'
 
 export const reducers = combineReducers({
   auth: authReducer,
@@ -36,15 +35,15 @@ export const reducers = combineReducers({
   checkAttendacneStatus: checkAttendanceStatusReducer,
 })
 
-// const persistConfig = {
-//   key: 'root',
-//   storage,
-//   whitelist: ['auth'],
-// }
-// const persistedReducer = persistReducer(persistConfig, reducers)
+const persistConfig = {
+  key: 'root',
+  storage,
+  whitelist: ['auth'],
+}
+const persistedReducer = persistReducer(persistConfig, reducers)
 
-const store = createStore(reducers, applyMiddleware(thunk))
+const store = createStore(persistedReducer, applyMiddleware(thunk))
 export default store
-// export const persistor = persistStore(store)
+export const persistor = persistStore(store)
 
 export const getStoreToken = () => store.getState().auth.userData.token

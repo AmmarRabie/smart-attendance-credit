@@ -1,8 +1,8 @@
 import React from 'react'
 import {
   ActivityIndicator,
-  Button,
   View,
+  Button,
   ImageBackground,
   StyleSheet,
   Text,
@@ -32,11 +32,18 @@ class AuthScreen extends React.Component {
     password: '',
   }
 
+  navigateToApp(role) {
+    if (!role) return
+    if (role === 'prof') this.props.navigation.navigate('ProfApp')
+    else this.props.navigation.navigate('StdApp')
+  }
+
+  componentWillMount() {
+    if (this.props.userData) this.navigateToApp(this.props.userData.role)
+  }
+
   componentWillReceiveProps(nextProps) {
-    if (nextProps.userData) {
-      if (nextProps.userData.role === 'prof') this.props.navigation.navigate('ProfApp')
-      else this.props.navigation.navigate('StdApp')
-    }
+    if (nextProps.userData) this.navigateToApp(nextProps.userData.role)
   }
 
   handleUsernameUpdate = username => {
@@ -64,7 +71,7 @@ class AuthScreen extends React.Component {
         style={{flex: 1}}
         source={require('../../assets/images/lecture.jpg')}
         resizeMode="cover"
-        blurRadius={3}
+        blurRadius={1}
       >
         <View style={styles.statusBar} />
         <View style={styles.login}>
@@ -83,9 +90,12 @@ class AuthScreen extends React.Component {
             value={this.state.password}
             onChangeText={this.handlePasswordUpdate}
             secureTextEntry
+            autoCorrect={false}
             autoCapitalize="none"
           />
-          <Button title="Login" style={styles.loginButton} onPress={this.login} />
+          <View style={styles.loginButton}>
+            <Button title="Login" onPress={this.login} />
+          </View>
         </View>
       </ImageBackground>
     )
@@ -107,12 +117,7 @@ const styles = StyleSheet.create({
   },
   loginButton: {
     borderRadius: 20,
-    textAlign: 'center',
-    marginLeft: 45,
-    marginRight: 45,
-    marginTop: 20,
-    marginBottom: 20,
-    backgroundColor: 'darkblue',
+    margin: 20,
   },
   textInput: {
     borderRadius: 15,

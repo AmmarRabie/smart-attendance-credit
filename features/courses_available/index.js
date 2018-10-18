@@ -12,10 +12,12 @@ import {
   Title,
   Content,
   Text as TextNativeBase,
+  Icon,
 } from 'native-base'
 
 import SchedulesList from '../../components/SchedulesList'
 import AppLoadingIndicator from '../../components/AppLoadingIndicator'
+import signOut from '../signout'
 
 import {GetCodes, GetWantedSchedules, openNewLecture} from './actinos'
 
@@ -155,9 +157,12 @@ class CoursesScreen extends React.Component {
             <Title>Courses</Title>
           </Body>
           <Right>
+            <ButtonNativeBase onPress={() => signOut(this)}>
+              <Icon name="log-out" />
+            </ButtonNativeBase>
             <ButtonNativeBase onPress={this.openMyLectures}>
               {/* <IconNativeBase name='dots-vertical' type='MaterialCommunityIcons' /> */}
-              <TextNativeBase> my lectures</TextNativeBase>
+              <TextNativeBase>lectures</TextNativeBase>
             </ButtonNativeBase>
           </Right>
         </Header>

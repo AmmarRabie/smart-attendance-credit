@@ -4,15 +4,15 @@ import {Provider} from 'react-redux'
 import {AppLoading, Font} from 'expo'
 import {Root} from 'native-base'
 
-import store from './store'
+import store, {persistor} from './store'
 import AuthScreen from './features/auth'
 import CoursesScreen from './features/courses_available'
 import ProfAttendanceScreen from './features/attendance_prof'
 import OpenLecturesScreen from './features/open_lectures'
 import LectureAttendanceScreen from './features/lecture_attendance'
 import ProfCreatedLecturesScreen from './features/prof_created_lectures'
-// import { persistor } from './store'
-// import { PersistGate } from 'redux-persist/integration/react'
+
+import {PersistGate} from 'redux-persist/integration/react'
 
 const ProfAppNavigator = createStackNavigator(
   {
@@ -72,11 +72,11 @@ export default class App extends React.Component {
     }
     return (
       <Provider store={store}>
-        {/* <PersistGate loading={null} persistor={persistor}> */}
-        <Root>
-          <AppNavigator />
-        </Root>
-        {/* </PersistGate> */}
+        <PersistGate loading={null} persistor={persistor}>
+          <Root>
+            <AppNavigator />
+          </Root>
+        </PersistGate>
       </Provider>
     )
   }
