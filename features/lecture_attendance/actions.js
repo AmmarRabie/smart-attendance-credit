@@ -23,10 +23,10 @@ export const attendStudentFailure = err => ({
   type: ATTEND_STUDENT_FAILURE,
   payload: err,
 })
-export const makeStudentAttend = LectureId => async dispatch => {
+export const makeStudentAttend = (LectureId, secret) => async dispatch => {
   dispatch(attendStudentSent())
   try {
-    await attendStudent(LectureId)
+    await attendStudent(LectureId, secret)
     dispatch(attendStudentSuccess())
   } catch (error) {
     dispatch(attendStudentFailure(error.message))

@@ -1,12 +1,31 @@
 import React from 'react'
-import {StyleSheet, ActivityIndicator, Alert, View, Text, Button, Image} from 'react-native'
+import {StyleSheet, ActivityIndicator, Alert, Image} from 'react-native'
 import {connect} from 'react-redux'
-import {Content, Title, Body, Header, Container} from 'native-base'
-
+import {
+  Content,
+  Title,
+  Body,
+  Header,
+  Container,
+  Right,
+  Icon,
+  View,
+  Item,
+  Input,
+  Button,
+  Text,
+  Card,
+  CardItem,
+  Left,
+} from 'native-base'
 
 import {makeStudentAttend, checkAttendanceStatus, checkStdAttendanceStatus} from './actions'
 
 class LectureAttendanceScreen extends React.Component {
+  state = {
+    secret: '',
+  }
+
   componentWillMount() {
     this.checkStatus()
     this.props.checkStdAttendanceStatus(this.LectureId())
@@ -28,25 +47,43 @@ class LectureAttendanceScreen extends React.Component {
   }
 
   takeStudentAttendance() {
-    this.props.makeStudentAttend(this.LectureId())
+    this.props.makeStudentAttend(this.LectureId(), this.state.secret)
     console.log(`takeStudentAttendance ${this.props.studnetIsAttend}`)
   }
 
   renderTakeAttendanceBtn(draw) {
     if (!draw) return null
     return (
-      <View style={styles.HorizontalContainer}>
-        <Text> Attendance: {this.props.isAttend}</Text>
-        <Button title="Take My Attendance" onPress={() => this.takeStudentAttendance()} />
-      </View>
+      <Card>
+        <CardItem>
+          <Left>
+            <Button onPress={() => this.takeStudentAttendance()}>
+              <Text>Take My Attendance</Text>
+            </Button>
+          </Left>
+          <Right>
+            <Item rounded>
+              <Input
+                value={this.state.secret}
+                placeholder="Secret"
+                onChangeText={text => this.setState({secret: text})}
+              />
+            </Item>
+          </Right>
+        </CardItem>
+      </Card>
     )
   }
 
-  renderMessageInfo() {
+  renderStdAttendanceInfo() {
     const message = this.props.studnetIsAttend
       ? 'You are attended in this lecture'
       : 'You are not attended'
-    return <Text> {message} </Text>
+    return <Text>{message}</Text>
+  }
+
+  renderLectureAttendanceInfo() {
+    return <Text>Attendance is {this.props.statusIsOpen ? 'open' : 'closed'}</Text>
   }
 
   render() {
@@ -74,17 +111,17 @@ class LectureAttendanceScreen extends React.Component {
           <Body>
             <Title>{this.props.navigation.getParam('course_name')}</Title>
           </Body>
+          <Right>
+            <Button onPress={this.checkStatus}>
+              <Icon color="#FFFFFF" name="refresh" type="MaterialCommunityIcons" />
+            </Button>
+          </Right>
         </Header>
-        <Content>
-          <View style={styles.MainContainer}>
-            {/* <OfflineNotice /> */}
-            <View style={styles.HorizontalContainer}>
-              <Text>Attendance Status: {statusIsOpen ? 'open' : 'closed'}</Text>
-              <Button title="Check attendance!" onPress={() => this.checkStatus()} />
-            </View>
-            {this.renderTakeAttendanceBtn(statusIsOpen && !studnetIsAttend)}
-            {this.renderMessageInfo()}
-          </View>
+        <Content padder>
+          {/* <OfflineNotice /> */}
+          {this.renderLectureAttendanceInfo()}
+          {this.renderStdAttendanceInfo()}
+          {this.renderTakeAttendanceBtn(statusIsOpen && !studnetIsAttend)}
         </Content>
       </Container>
     )
@@ -114,11 +151,12 @@ const styles = StyleSheet.create({
   MainContainer: {
     flex: 1,
     flexDirection: 'column',
-    justifyContent: 'flex-start',
+    alignItems: 'center',
     backgroundColor: '#EEEEEE',
   },
   HorizontalContainer: {
     flexDirection: 'row',
+    alignSelf: 'stretch',
   },
   LoadingContainer: {
     flex: 1,

@@ -25,7 +25,10 @@ import {
   changeLectureAttendance,
   submitAttendance,
   submitAttendanceToken,
+  changeSecret,
+  getLectureSecret,
 } from './actions'
+import SecretComponent from './SecretView'
 
 class ProfAttendanceScreen extends React.Component {
   state = {
@@ -57,6 +60,7 @@ class ProfAttendanceScreen extends React.Component {
         type: 'danger',
       })
     }
+    console.log(`will recieve prpos: secret is ${nextProps.secret}`)
   }
 
   getLectureAttendance = lectureId => {
@@ -130,10 +134,17 @@ class ProfAttendanceScreen extends React.Component {
     this.props.submitAttendance(lectureId)
   }
 
+  changeSecret(secret) {
+    console.log('i will call the actions now from my props')
+    const lectureId = this.props.navigation.getParam('lecture_id')
+    this.props.changeSecret(lectureId, secret)
+  }
+
   componentWillMount() {
     console.log('component will mount called')
     const lectureId = this.props.navigation.getParam('lecture_id') // this.props.navigation.state.params.lecture_id;
     this.getLectureAttendance(lectureId)
+    this.props.getLectureSecret(lectureId)
   }
 
   alert = (title, msg) => {
@@ -167,7 +178,7 @@ class ProfAttendanceScreen extends React.Component {
   }
 
   render() {
-    console.log('re render called')
+    console.log(`re render called ${this.props.secret}`)
     const attendanceList = this.props.attendance_list
     const getLectureAttendanceLoading = this.props.get_lecture_attendance_loading
     const getLectureAttendanceError = this.props.get_lecture_attendance_error
@@ -197,12 +208,16 @@ class ProfAttendanceScreen extends React.Component {
         </Header>
         <Content padder>
           <Text style={{fontSize: 50, color: 'red', textAlign: 'center'}}>
-            {' '}
-            {this.state.attendance_count} / {this.state.all_student_count}{' '}
+            {this.state.attendance_count} / {this.state.all_student_count}
           </Text>
 
           <Divider style={styles.divider} />
           <Text style={{textAlign: 'center'}}> {this.getAttendanceStatusMessageFromProp()} </Text>
+          <Divider style={styles.divider} />
+          <SecretComponent
+            onSecretChange={secret => this.changeSecret(secret)}
+            initial={this.props.secret}
+          />
           <Divider style={styles.divider} />
           {this.attendanceRender(attendanceList, getLectureAttendanceLoading)}
         </Content>
@@ -221,6 +236,10 @@ const mapStateToProps = state => ({
   get_lecture_attendance_loading: state.prof.attendanceList.loading,
   get_lecture_attendance_error: state.prof.attendanceList.error,
 
+  secret: state.prof.secret.value,
+  secretError: state.prof.secret.error,
+  secretLoading: state.prof.secret.loading,
+
   change_std_att_msg: state.prof.chngStuAtt.msg,
   change_std_att_error: state.prof.chngStuAtt.error,
   change_std_att_loading: state.prof.chngStuAtt.loading,
@@ -235,6 +254,8 @@ const mapDispatchToProps = {
   changeLectureAttendance,
   submitAttendance,
   submitAttendanceToken,
+  changeSecret,
+  getLectureSecret,
 }
 export default connect(
   mapStateToProps,
@@ -276,6 +297,6 @@ const styles = StyleSheet.create({
   },
   statusBar: {
     backgroundColor: '#000000',
-    height: 15,
+    height: 0,
   },
 })

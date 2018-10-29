@@ -41,5 +41,10 @@
     "redux-persist": "^5.10.0",
     "redux-thunk": "^2.3.0",
     "xml-js": "^1.6.7"
+  },
+  "rnpm": {
+    "assets": [
+	  "./assets/fonts/"
+    ]
   }
 }
