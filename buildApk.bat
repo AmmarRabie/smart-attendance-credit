@@ -1,0 +1,1 @@
+cmd /k "cd android & gradlew.bat assembleRelease"
