@@ -7,11 +7,12 @@ from helpers import buildUrlWithParams
 def getAllSchedules():
     print('fetching getAllSchedules for the first time after 6 hours')
     try:
-        r = requests.get('http://std.eng.cu.edu.eg/schedules.aspx/?s=0')
+        r = requests.get('https://std.eng.cu.edu.eg/schedules.aspx/?s=0')
         root = ET.fromstring(r.text)
     except requests.exceptions.ConnectionError as error:
         return None, {'msg': 'server is down now, try again later', 'detail': str(error)}
-    except:
+    except ET.ParseError as e:
+        print(type(e))
         return None, {'msg': 'unexpected error occurred'}
     return root, None
 
@@ -35,7 +36,7 @@ def getScheduleStudents(id):
     print('fetching getScheduleStudents={} for the first time after 6 hours'.format(id))
     try:
         r = requests.get(
-            'http://std.eng.cu.edu.eg/schedules.aspx/?s={}'.format(id))
+            'https://std.eng.cu.edu.eg/schedules.aspx/?s={}'.format(id))
         root = ET.fromstring(r.text)
     except requests.exceptions.ConnectionError as error:
         return None, {'msg': 'server is down now, try again later', 'detail': str(error)}
